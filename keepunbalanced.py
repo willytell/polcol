@@ -212,10 +212,10 @@ class Keep_Unbalanced(object):
                 print('\n > y_validation_neop')
                 print(self.y_validation_neop)
 
-                print('\n > y_validation_noneo')
+                print('\n > X_validation_noneo')
                 print(self.X_validation_noneo)
                 print('\n > y_validation_noneo')
-                print(self.X_validation_noneo)
+                print(self.y_validation_noneo)
 
                 print('\n > X_train_neop')
                 print(self.X_train_neop)
