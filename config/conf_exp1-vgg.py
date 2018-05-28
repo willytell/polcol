@@ -21,6 +21,10 @@ images_filenames = "images_filenames.txt"
 labels = "binary_classification.txt"
 dataset_images_path = "/home/willytell/Documentos/MCV/M9/TFM/ExperCNN/Original"   # all images are in this folder
 
+# Generate images using bounding boxes of masks.
+dataset_mask_directory = "/home/willytell/Documentos/MCV/M9/TFM/ExperCNN/GT"
+bbox_output_path       = "/home/willytell/Documentos/MCV/M9/TFM/ExperCNN/BBox"    # directory to write the images from mask
+
 # Model
 model_name = 'vgg16'
 load_pretrained = False

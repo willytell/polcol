@@ -17,6 +17,7 @@ from tools.callbacks_factory import Callbacks_Factory
 from keras import backend as K
 from utils import plot_confusion_matrix
 from sklearn.metrics import confusion_matrix
+from bounding_box import BBox
 
 #def new_session():
 #    if K.backend() == 'tensorflow':  # pragma: no cover
@@ -52,7 +53,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Model training')
     parser.add_argument('-c', '--config_path', type=str, default=None, help='Configuration file')
     parser.add_argument('-ne', '--number_of_experiment', type=int, default=None, help='Configuration file')
-    parser.add_argument('-a', '--action', type=str, default=None, help='divide, train or test')
+    parser.add_argument('-a', '--action', type=str, default=None, help='bbox, divide, train or test')
     args = parser.parse_args()
 
     cf = Configuration(args.config_path, args.action).load()
@@ -61,6 +62,14 @@ if __name__ == '__main__':
     if args.number_of_experiment is not None:
         print("number of experiment: ", args.number_of_experiment)
         # TODO: handle the option for a particular train or test
+
+
+    # Generate images from the bounding boxes of each corresponding mask
+    if args.action == 'bbox':
+        print("bounding box...")
+        bbox = BBox()
+        bbox.load(cf)
+        bbox.make(cf)
 
     # Divide the Dataset for Cross-Validation
     if args.action == 'divide':
