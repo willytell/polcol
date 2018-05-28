@@ -1,0 +1,190 @@
+import numpy as np
+import os
+import random
+from sklearn.model_selection import StratifiedKFold
+import shutil
+import subprocess
+
+
+n_images_for_test = 16
+n_splits = 5
+
+# Path definition
+images_filenames = 'images_filenames.txt'
+labels = 'binary_classification.txt'
+dataset_name = 'dataset_'+str(n_images_for_test)+'_'+str(n_splits)
+
+working_directory = '/home/willytell/Documentos/MCV/M9/TFM/ExperCNN/'+dataset_name
+dataset_directory='/home/willytell/Documentos/MCV/M9/TFM/ExperCNN'
+
+# Server paths
+#working_directory = '/home/master/tfm/ExperCNN/'+dataset_name
+#dataset_directory='/home/master/tfm/ExperCNN'
+
+def read_data():
+    X = np.genfromtxt(os.path.join(dataset_directory, images_filenames), dtype='str')
+    y = np.genfromtxt(os.path.join(dataset_directory, labels), dtype='str')
+
+    return X, y
+
+
+def rate(n_elements, freq):
+    assert n_elements != 0
+    assert n_elements == np.sum(freq)
+
+    proportion = np.copy(freq)
+
+    proportion = np.divide(proportion, float(n_elements)) # FIXED: np.divide, scalar must be float!
+
+    return proportion
+
+
+def shuffle (X, y):
+    r = random.random()
+    #print (r)
+    random.shuffle(X, lambda: r)  # shuffle images_filenames
+    random.shuffle(y, lambda: r)  # shuffle labels
+
+
+def divide_dataset( n_classes, test_size, proportion, X, y):
+    #np.random.randint(0, len(X)-1, 1)
+
+    if n_classes == 2:
+
+        # Preparing TEST set
+        n_images = int(round(test_size * proportion[1])) # proportion[1] means the rate of the Noneoplasia of 37%
+        rest_images = (test_size - n_images)
+
+        NOneo_idx = np.where(y == 'NONEOPLASICO')
+        NOneo_idx_arr = np.asarray(NOneo_idx[0])  # tupla to np.array
+        range_size = len(NOneo_idx[0])
+        random_idx = np.random.choice(range_size, n_images, replace=False)  # without repetition
+        temp_idx_c1 = NOneo_idx_arr[random_idx]
+        X_test_class1 = np.copy(X[temp_idx_c1])
+        y_test_class1 = np.copy(y[temp_idx_c1])
+
+
+        neo_idx = np.where(y == 'NEOPLASICO')
+        neo_idx_arr = np.asarray(neo_idx[0])  # tupla to np.array
+        range_size = len(neo_idx[0])
+        random_idx = np.random.choice(range_size, rest_images, replace=False)   # without repetition
+        temp_idx_c2 = neo_idx_arr[random_idx]
+        X_test_class2 = np.copy(X[temp_idx_c2])
+        y_test_class2 = np.copy(y[temp_idx_c2])
+
+        # concatenating the both classes selected randomly to conform the test set
+        X_test = np.concatenate((X_test_class1, X_test_class2), axis=0)
+        y_test = np.concatenate((y_test_class1, y_test_class2), axis=0)
+
+
+
+        # Preparing the REST set (train+validation)
+        remove_idx = np.concatenate((temp_idx_c1, temp_idx_c2), axis=0)
+        X_rest = np.delete(X, remove_idx)
+        y_rest = np.delete(y, remove_idx)
+
+
+    return X_test, y_test, X_rest, y_rest
+
+
+def copy_files(file_names, src, dst):
+
+    if not os.path.exists(dst):
+        os.makedirs(dst)
+
+    for name in file_names:
+        shutil.copy (os.path.join(src, name), dst)
+
+
+def copy_classes(X_train, y_train, X_validation, y_validation, folder_name, classes, X_test, y_test, flag_test=True):
+
+    # Defining paths
+    src_path = os.path.join(dataset_directory, "Original")
+    train_path = os.path.join(working_directory, folder_name, "train")
+    validation_path = os.path.join(working_directory, folder_name, "valid")
+    test_path = os.path.join(working_directory, folder_name, "test")
+
+
+
+    for item in classes:
+        idx1 = np.where(y_train == item)
+        idx1_arr = np.asarray(idx1[0])  # tupla to np.array
+        X_one_class = np.copy(X_train[idx1_arr])
+        copy_files(X_one_class, src_path, os.path.join(train_path, item))
+
+        idx2 = np.where(y_validation == item)
+        idx2_arr = np.asarray(idx2[0])  # tupla to np.array
+        X_one_class = np.copy(X_validation[idx2_arr])
+        copy_files(X_one_class, src_path, os.path.join(validation_path, item))
+
+        idx3 = np.where(y_test == item)
+        idx3_arr = np.asarray(idx3[0])  # tupla to np.array
+        X_one_class = np.copy(X_test[idx3_arr])
+        copy_files(X_one_class, src_path, os.path.join(test_path, item))
+
+
+def cross_validation(n_splits , X, y, classes, X_test, y_test):
+    r = random.random()
+
+    skf = StratifiedKFold(n_splits=n_splits, shuffle=True)
+    #print("n_splits : ", skf.get_n_splits(X, y))
+    #print(skf)
+
+    kfold = 'kfold'
+    i = 1
+    for train_index, validation_index in skf.split(X, y):
+        #print("TRAIN:", train_index, "VALIDATION:", validation_index)
+        #print("TRAIN length: ", len(train_index))
+        #print("VALIDATION length: ", len(validation_index))
+        #print("")
+        X_train, X_validation = X[train_index], X[validation_index]
+        y_train, y_validation = y[train_index], y[validation_index]
+
+        copy_classes(X_train, y_train, X_validation, y_validation, dataset_name+"-"+kfold + str(i), classes, X_test, y_test, flag_test=True)
+
+        subprocess.call(["./adapt_conf.sh", dataset_directory, working_directory, "/config.py", dataset_name    +"-"+kfold+str(i),str(len(train_index)), str(len(validation_index)), str(n_images_for_test)])
+
+
+
+        i=i+1
+
+
+
+
+# Read dataset
+X_original, y_original = read_data()
+
+#classes = np.unique(y_all)
+classes, frequency = np.unique(y_original, return_counts=True) # count the frequency of unique values
+
+n_samples = len(X_original)
+n_classes = len(classes)
+
+# Rates of each class
+proportion = rate(n_samples, frequency)
+
+X_all = np.copy(X_original)
+y_all = np.copy(y_original)
+
+shuffle(X_all, y_all)
+
+#X_idx = np.arange(n_samples)
+#y_idx = np.arange(n_samples)
+
+# TODO: make a verification function to check the consistency between the images_filename and its lables.
+
+
+X_test, y_test, X_rest, y_rest = divide_dataset(n_classes, n_images_for_test, proportion, X_all, y_all)
+
+#src_path = os.path.join(dataset_directory, "Original")
+#test_path = os.path.join(working_directory, "test")
+#copy_files(X_test, src_path,  test_path)
+
+
+#cross_validation(n_splits, X_rest, y_rest, classes, X_test, y_test)
+
+
+
+
+
+

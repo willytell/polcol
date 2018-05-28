@@ -1,0 +1,27 @@
+import imp
+import os
+
+# Dataset
+dataset_name    = 'kfold12'   # Name of the dataset
+n_channels      = 3               # Number of channels of the images
+color_mode      = 'rgb'           # Number of channels of the images [rgb, grayscale]
+void_class      = []              # Labels of the void classes (It should be greather than the number of classes)
+img_shape       = (1920, 1080)    # Shape of the input image (Height, Width)
+n_images_train  = 188
+n_images_test  = 22
+n_images_valid  = 16
+class_mode      = 'categorical'   # {'categorical', 'binary', 'sparse', 'segmentation', None}:
+
+
+# Normalization constants
+rgb_mean        = [0, 0, 0]        # Pixel mean to be substracted
+rgb_std         = [1, 1, 1]        # Pixel std to be divided
+rgb_rescale     = 1/255.           # Scalar to divide and set range 0-1
+
+# Classes
+classes = {
+    0: 'NONEOPLASICO',
+    1: 'NEOPLASICO',
+    }
+
+n_classes = len(classes) - len(void_class) # Not including the void classes
