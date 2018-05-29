@@ -288,6 +288,80 @@ if __name__ == '__main__':
                                                    mode='test')
 
 
+                ###################################################################
+
+                #data_path91 = os.path.join(cf.experiments_path, cf.experiment_name) + '/' + cf.experiment_prefix + str(e) + '_' + cf.dataset_prefix + str(k) + '_' + str(cf.num_images_for_test) + '_' + str(cf.n_splits) + '_' + cf.n_splits_prefix + str(k)
+
+                #data_path92 = os.path.join(cf.experiments_path, cf.experiment_name) + '/' + cf.experiment_prefix + str(e) + '_' + cf.dataset_prefix + str(k) + '_' + str(cf.num_images_for_test) + '_' + str(cf.n_splits) + '_' + cf.n_splits_prefix + str(k)
+
+                validation_generator = Dataset_Generator(cf, cf.dataset_images_path,
+                                                         n_classes=cf.num_classes,
+                                                         batch_size=cf.batch_size_valid,
+                                                         resize_image=cf.resize_image,
+                                                         flag_shuffle=cf.shuffle_valid,
+                                                         apply_augmentation=False,
+                                                         sampling_score=None,
+                                                         data_path=data_path,
+                                                         data_path2=data_path2,
+                                                         mode='validation')
+
+                validation_start_time = time.time()
+                print('\n > Validating the model... using validatin set')
+                # evaluate_generator(self, generator, steps=None, max_queue_size=10, workers=1, use_multiprocessing=False, verbose=0)
+                score = model.evaluate_generator(generator=validation_generator.generate(),
+                                                 steps=(validation_generator.total_images // cf.batch_size_test))  # , \
+                # max_queue_size=10, \
+                # workers=1, \
+                # use_multiprocessing=False)
+                validation_elapsed_time = time.time() - validation_start_time
+                FPS = validation_generator.total_images / validation_elapsed_time
+                SPF = validation_elapsed_time / validation_generator.total_images
+                print("   Validation time: {:.11f}. FPS: {:.11f}. Seconds per Frame: {:.11f}".format(validation_elapsed_time, FPS, SPF))
+                print("   Validation metrics:")
+                print("      acc: {:.6f}, ".format(score[1]))
+                print("      loss: {:.12f}".format(score[0]))
+                # print("   Loss: ", score[0], "Accuracy: ", score[1])
+                print("\n")
+
+                # predict_generator(self, generator, steps=None, max_queue_size=10, workers=1, use_multiprocessing=False, verbose=0)
+                predictions = model.predict_generator(generator=validation_generator.generate(),
+                                                      steps=(validation_generator.total_images // cf.batch_size_valid))
+
+                print("predictions = ", predictions)
+                # print ("np.argmax(predicitons) = ", np.argmax(predictions))
+                print("\n")
+
+                rounded_pred_model = np.array([], dtype=np.int64)
+                for p in predictions:
+                    rounded_pred_model = np.append(rounded_pred_model, np.argmax(p))
+
+                print("rounded_pred_model = ", rounded_pred_model)
+
+                # print("len(predict_generator.history_batch_labels) = ", len(predict_generator.history_batch_labels))
+                # print("predict_generator.history_batch_labels = ", predict_generator.history_batch_labels)
+
+                # steps = (predict_generator.total_images // cf.batch_size_test)
+                # y_true = predict_generator.history_batch_labels[0:steps*cf.batch_size_test]
+                y_true = validation_generator.history_batch_labels[
+                         0:len(validation_generator.history_batch_labels) - cf.batch_size_test]
+                # print("len(y_true) = ", len(y_true))
+                print("            y_true = ", y_true)
+                print("\n")
+
+                cm = confusion_matrix(y_true, rounded_pred_model)
+                cm_plot_labels = ['Noneoplasico', 'Neoplasico']
+
+                fname = os.path.join(cf.experiments_path, cf.experiment_name,
+                                     cf.model_output_directory) + '/' + cf.experiment_prefix + str(e) + \
+                        '_' + cf.dataset_prefix + str(k) + '_' + str(cf.num_images_for_test) + '_' + \
+                        str(cf.n_splits) + '_' + cf.n_splits_prefix + str(k) + '_' + 'cmatrix_validation.jpg'
+
+                plot_confusion_matrix(cm, cm_plot_labels, fname, title='Confusion Matrix')
+
+
+
+                ###################################################################
+
                 test_start_time = time.time()
                 print('\n > Testing the model...')
                 # evaluate_generator(self, generator, steps=None, max_queue_size=10, workers=1, use_multiprocessing=False, verbose=0)
@@ -337,7 +411,7 @@ if __name__ == '__main__':
                 fname = os.path.join(cf.experiments_path, cf.experiment_name,
                                             cf.model_output_directory) + '/' + cf.experiment_prefix + str(e) + \
                                '_' + cf.dataset_prefix + str(k) + '_' + str(cf.num_images_for_test) + '_' + \
-                               str(cf.n_splits) + '_' + cf.n_splits_prefix + str(k) + '_' + 'cmatrix.jpg'
+                               str(cf.n_splits) + '_' + cf.n_splits_prefix + str(k) + '_' + 'cmatrix_testing.jpg'
 
                 plot_confusion_matrix(cm, cm_plot_labels, fname, title='Confusion Matrix')
 
