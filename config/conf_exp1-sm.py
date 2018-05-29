@@ -8,7 +8,7 @@ num_repetition_experiment = 1      # Repeat n times the experiment
 
 # Cross validation
 num_images_for_test = 24
-n_splits = 2 
+n_splits = 5 
 n_splits_prefix = "kfold"
 
 num_classes = 2

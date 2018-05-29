@@ -109,8 +109,8 @@ class Dataset_Generator(object):
             missing = feed_noneo - self.noneo_size
             for _ in range(missing):
                 random_idx = randint(0, len(self.X_noneo)-1)
-                self.X_noneo        = np.append(self.X_noneo, self.X_noneo[random_idx])
-                self.y_noneo_labels = np.append(self.y_noneo_labels, self.y_noneo_class[random_idx])   
+                self.X_noneo       = np.append(self.X_noneo, self.X_noneo[random_idx])
+                self.y_noneo_class = np.append(self.y_noneo_class, self.y_noneo_class[random_idx])   
 
             self.noneo_size = len(self.X_noneo)            
             print('   ===> NEW amount of Noneo images: ' + str(self.noneo_size))
@@ -120,8 +120,8 @@ class Dataset_Generator(object):
             missing = feed_neop - self.neop_size
             for _ in range(missing):
                 random_idx = randint(0, len(self.X_neop)-1)
-                self.X_neop        = np.append(self.X_neop, self.X_neop[random_idx])
-                self.y_neop_labels = np.append(self.y_neop_labels, self.y_neop_class[random_idx])   
+                self.X_neop       = np.append(self.X_neop, self.X_neop[random_idx])
+                self.y_neop_class = np.append(self.y_neop_class, self.y_neop_class[random_idx])   
 
             self.neop_size = len(self.X_neop)
             print('   ===> NEW amount Neop images: ' + str(self.noneo_size))
@@ -242,15 +242,35 @@ class Dataset_Generator(object):
                 #            X_neop_names = np.append(X_neop_names, self.X_neop[random_idx])
                 #            y_neop_labels = np.append(y_neop_labels, self.y_neop_class[random_idx])
 
+                
+                # ONLY for TEST: Checking special case for the last batch size
+                if self.mode == 'test':
+                    # if we there is no more noneo items
+                    if len(X_noneo_names) < self.noneo_batch_size:
+                        # fill with the other class
+                        #print ("++")
+                        missing = self.batch_size - len(X_noneo_names)
+                        X_neop_names = self.X_neop[nFiles * self.neop_batch_size:(nFiles + 1) * self.neop_batch_size + missing]
+                        y_neop_labels = self.y_neop_class[nFiles * self.neop_batch_size:(nFiles + 1) * self.neop_batch_size + missing]
+    
+                    elif len(X_neop_names) < self.neop_batch_size:   #if we there is no more neop items
+                        # fill with the other class
+                        #print("+++++")
+                        missing = self.batch_size - len(X_neop_names)
+                        X_noneo_names = self.X_noneo[nFiles * self.noneo_batch_size:(nFiles + 1) * self.noneo_batch_size + missing]
+                        y_noneo_labels = self.y_noneo_class[nFiles * self.noneo_batch_size:(nFiles + 1) * self.noneo_batch_size + missing]
+
+
+
                 batch_fnames = np.concatenate((X_noneo_names, X_neop_names), axis=0)
                 batch_labels = np.concatenate((y_noneo_labels, y_neop_labels), axis=0)
 
                 #print ("\n len(batch_fnames) = ", len(batch_fnames))
                 #print ("\n self.batch_size = ", self.batch_size)
              
-                #assert len(batch_fnames) == self.batch_size
+                assert len(batch_fnames) == self.batch_size
                 if len(batch_fnames) != self.batch_size:
-                    #print("\n %%%%%%%%%")
+                    print("\n %%%%%%%%%")
                     continue
 
                 
