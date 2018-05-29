@@ -322,6 +322,8 @@ if __name__ == '__main__':
                 #print("len(predict_generator.history_batch_labels) = ", len(predict_generator.history_batch_labels))
                 #print("predict_generator.history_batch_labels = ", predict_generator.history_batch_labels)
 
+                # steps = (predict_generator.total_images // cf.batch_size_test)
+                #y_true = predict_generator.history_batch_labels[0:steps*cf.batch_size_test]
                 y_true = predict_generator.history_batch_labels[0:len(predict_generator.history_batch_labels)-cf.batch_size_test]
                 #print("len(y_true) = ", len(y_true))
                 print("            y_true = ", y_true)
@@ -341,6 +343,14 @@ if __name__ == '__main__':
                 #                                            batch_size=(predict_generator.total_images// cf.batch_size_test), verbose=0)
 
                 #print ("rounded_predictions = ", rounded_predictions)
+
+
+                #print("\n")
+                #K.clear_session()
+
+                #print('\n > Deleting the model.',)
+                #del model, test_generator, predict_generator, classes_generator, optimizer
+                #gc.collect()
 
                 print("\n ---> Finish experiment: " + full_name_experiment + " <---")
 
