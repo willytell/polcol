@@ -161,7 +161,7 @@ if __name__ == '__main__':
                                                     n_classes=cf.num_classes,
                                                     batch_size=cf.batch_size_train,
                                                     resize_image=cf.resize_image,
-                                                    shuffle=cf.shuffle_train,
+                                                    flag_shuffle=cf.shuffle_train,
                                                     apply_augmentation=False,
                                                     sampling_score=None,
                                                     data_path=data_path,
@@ -171,7 +171,7 @@ if __name__ == '__main__':
                                                          n_classes=cf.num_classes,
                                                          batch_size=cf.batch_size_valid,
                                                          resize_image=cf.resize_image,
-                                                         shuffle=cf.shuffle_valid,
+                                                         flag_shuffle=cf.shuffle_valid,
                                                          apply_augmentation=False,
                                                          sampling_score=None,
                                                          data_path=data_path,
@@ -255,7 +255,7 @@ if __name__ == '__main__':
                                                    n_classes=cf.num_classes,
                                                    batch_size=cf.batch_size_test,
                                                    resize_image=cf.resize_image,
-                                                   shuffle=cf.shuffle_test,
+                                                   flag_shuffle=cf.shuffle_test,
                                                    apply_augmentation=False,
                                                    sampling_score=None,
                                                    data_path=data_path,
@@ -266,7 +266,7 @@ if __name__ == '__main__':
                                                    n_classes=cf.num_classes,
                                                    batch_size=cf.batch_size_test,
                                                    resize_image=cf.resize_image,
-                                                   shuffle=cf.shuffle_test,
+                                                   flag_shuffle=cf.shuffle_test,
                                                    apply_augmentation=False,
                                                    sampling_score=None,
                                                    data_path=data_path,
@@ -278,7 +278,7 @@ if __name__ == '__main__':
                                                    n_classes=cf.num_classes,
                                                    batch_size=cf.batch_size_test,
                                                    resize_image=cf.resize_image,
-                                                   shuffle=cf.shuffle_test,
+                                                   flag_shuffle=cf.shuffle_test,
                                                    apply_augmentation=False,
                                                    sampling_score=None,
                                                    data_path=data_path,
@@ -289,8 +289,8 @@ if __name__ == '__main__':
                 test_start_time = time.time()
                 print('\n > Testing the model...')
                 # evaluate_generator(self, generator, steps=None, max_queue_size=10, workers=1, use_multiprocessing=False, verbose=0)
-                score = model.evaluate_generator(generator=test_generator.generate(), \
-                                         steps=(test_generator.total_images // cf.batch_size_test)) #, \
+                score = model.evaluate_generator(generator=test_generator.generate(),
+                                                 steps=(test_generator.total_images // cf.batch_size_test)) #, \
                                          #max_queue_size=10, \
                                          #workers=1, \
                                          #use_multiprocessing=False)
