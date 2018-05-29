@@ -178,12 +178,14 @@ if __name__ == '__main__':
                                                          data_path2=data_path2,
                                                          mode='validation')
                 print('\n > Training the model...')
-                model.fit_generator(generator=train_generator.generate(), validation_data=validation_generator.generate(),
+                history = model.fit_generator(generator=train_generator.generate(), validation_data=validation_generator.generate(),
                                     validation_steps=(validation_generator.total_images // cf.batch_size_valid),
                                     steps_per_epoch=(train_generator.total_images // cf.batch_size_train),
                                     epochs=cf.n_epochs, verbose=1, callbacks=cb)
 
-
+                print("   history: ")
+                print(history.history.keys())
+                print(history.history)
 
                 # /home/willytell/Experiments/exp1/output/experiment0_dataset0_22_5_kfold0_weights.hdf5
                 weights_path = os.path.join(cf.experiments_path, cf.experiment_name, cf.model_output_directory) + '/' +                                                                   cf.experiment_prefix + str(e) + '_' + cf.dataset_prefix + str(k) + '_' +                                                                      str(cf.num_images_for_test) + '_' + str(cf.n_splits) + '_' + cf.n_splits_prefix +                                                             str(k) + '_' + cf.weights_suffix
