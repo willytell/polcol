@@ -188,7 +188,6 @@ if __name__ == '__main__':
                 print(history.history)
 
 
-
                 # /home/willytell/Experiments/exp1/output/experiment0_dataset0_22_5_kfold0_weights.hdf5
                 weights_path = os.path.join(cf.experiments_path, cf.experiment_name, cf.model_output_directory) + '/' +                                                                   cf.experiment_prefix + str(e) + '_' + cf.dataset_prefix + str(k) + '_' +                                                                      str(cf.num_images_for_test) + '_' + str(cf.n_splits) + '_' + cf.n_splits_prefix +                                                             str(k) + '_' + cf.weights_suffix
 
@@ -232,6 +231,7 @@ if __name__ == '__main__':
                 for p in predictions:
                     rounded_pred_model = np.append(rounded_pred_model, np.argmax(p))
 
+                print("length of rounded_pred_model = ", len(rounded_pred_model))
                 print("rounded_pred_model = ", rounded_pred_model)
 
                 # print("len(predict_generator.history_batch_labels) = ", len(predict_generator.history_batch_labels))
