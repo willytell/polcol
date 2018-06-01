@@ -250,9 +250,11 @@ if __name__ == '__main__':
                 fname = os.path.join(cf.experiments_path, cf.experiment_name,
                                      cf.model_output_directory) + '/' + cf.experiment_prefix + str(e) + \
                         '_' + cf.dataset_prefix + str(k) + '_' + str(cf.num_images_for_test) + '_' + \
-                        str(cf.n_splits) + '_' + cf.n_splits_prefix + str(k) + '_' + 'cmatrix_validation.jpg'
+                        str(cf.n_splits) + '_' + cf.n_splits_prefix + str(k) + '_' #+ 'cmatrix_validation.jpg'
 
-                plot_confusion_matrix(cm, cm_plot_labels, fname, title='Confusion Matrix')
+                plot_confusion_matrix(cm, cm_plot_labels, fname + 'cmatrix_validation.jpg', normalize=False, title='Confusion Matrix')
+                print("\n")
+                plot_confusion_matrix(cm, cm_plot_labels, fname + 'cmatrix_normalized_validation.jpg', normalize=True, title='Confusion Matrix')
 
 
                 ###################################################################
@@ -438,9 +440,11 @@ if __name__ == '__main__':
                 fname = os.path.join(cf.experiments_path, cf.experiment_name,
                                             cf.model_output_directory) + '/' + cf.experiment_prefix + str(e) + \
                                '_' + cf.dataset_prefix + str(k) + '_' + str(cf.num_images_for_test) + '_' + \
-                               str(cf.n_splits) + '_' + cf.n_splits_prefix + str(k) + '_' + 'cmatrix_testing.jpg'
+                               str(cf.n_splits) + '_' + cf.n_splits_prefix + str(k) + '_' #+ 'cmatrix_testing.jpg'
 
-                plot_confusion_matrix(cm, cm_plot_labels, fname, title='Confusion Matrix')
+                plot_confusion_matrix(cm, cm_plot_labels, fname + 'cmatrix_testing.jpg', normalize=False, title='Confusion Matrix')
+                print("\n")
+                plot_confusion_matrix(cm, cm_plot_labels, fname + 'cmatrix_normalized_testing.jpg', normalize=True, title='Confusion Matrix')
 
                 #rounded_predictions = model.predict_classes(classes_generator.generate(), 
                 #                                            batch_size=(predict_generator.total_images// cf.batch_size_test), verbose=0)
