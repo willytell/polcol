@@ -19,6 +19,10 @@ from utils import plot_confusion_matrix
 from sklearn.metrics import confusion_matrix
 from bounding_box import BBox
 
+from keras.callbacks import Callback
+from sklearn.metrics import recall_score, precision_score
+
+
 #def new_session():
 #    if K.backend() == 'tensorflow':  # pragma: no cover
 #        import tensorflow as tf
@@ -27,6 +31,103 @@ from bounding_box import BBox
 #        config.gpu_options.allow_growth = True
 #        session = tf.Session(config=config)
 #        K.set_session(session)
+
+
+#class Metrics(Callback):
+#    def on_train_begin(self, logs={}):
+#        self._data = []
+#
+#    def on_epoch_end(self, batch, logs={}):
+#        X_val, y_val = self.validation_data[0], self.validation_data[1]
+#        y_predict = np.asarray(model.predict(X_val))
+#
+#        y_val = np.argmax(y_val, axis=1)
+#        y_predict = np.argmax(y_predict, axis=1)
+#
+#        self._data.append({
+#            'val_recall': recall_score(y_val, y_predict),
+#            'val_precision': precision_score(y_val, y_predict),
+#        })
+#        return
+#
+#    def get_data(self):
+#        return self._data
+#
+import keras
+
+#class Metrics(keras.callbacks.Callback):
+#    def on_epoch_end(self, batch, logs={}):
+#        predict = np.asarray(self.model.predict(self.validation_data[0]))
+#        targ = self.validation_data[1]
+#        print(" ", recall_score(targ, predict))
+#        return
+
+from sklearn.metrics import roc_auc_score
+ 
+class Metrics(keras.callbacks.Callback):
+    def __init__(self, model, data_path, data_path2):
+        self._data = []
+        self.model = model
+        self.validation_generator = Dataset_Generator(cf, cf.dataset_images_path,
+                                                 n_classes=cf.num_classes,
+                                                 batch_size=cf.batch_size_valid,
+                                                 resize_image=cf.resize_image,
+                                                 flag_shuffle=cf.shuffle_valid,
+                                                 apply_augmentation=False,
+                                                 sampling_score=None,
+                                                 data_path=data_path,
+                                                 data_path2=data_path2,
+                                                 mode='validation')
+
+
+
+    def on_train_begin(self, logs={}):
+        self.aucs = []
+        #self.losses = []
+ 
+    def on_train_end(self, logs={}):
+        return
+ 
+    def on_epoch_begin(self, epoch, logs={}):
+        return
+ 
+    def on_epoch_end(self, epoch, logs={}):
+        #self.losses.append(logs.get('loss'))
+
+        # predict_generator(self, generator, steps=None, max_queue_size=10, workers=1, use_multiprocessing=False, verbose=0)
+        y_pred = model.predict_generator(generator=self.validation_generator.generate(),
+                                              steps=(self.validation_generator.total_images // cf.batch_size_valid))
+
+        rounded_pred = np.argmax(y_pred, axis=1)
+        steps = (self.validation_generator.total_images // cf.batch_size_valid)
+        y_true = self.validation_generator.history_batch_labels[0:steps * cf.batch_size_valid]
+
+        self.aucs.append(roc_auc_score(y_true, rounded_pred))
+
+
+        self._data.append({
+            'val_precision': precision_score(y_true, rounded_pred),
+            'val_recall': recall_score(y_true, rounded_pred),
+        })
+
+        cm = confusion_matrix(y_true, rounded_pred)
+        cm_plot_labels = ['Noneoplasico', 'Neoplasico']
+
+        plot_confusion_matrix(cm, cm_plot_labels, fname=None, normalize=False, title='Training Confusion Matrix')
+        print("\n")
+        plot_confusion_matrix(cm, cm_plot_labels, fname=None, normalize=True, title='Training Confusion Matrix')
+        print("\n")
+
+        return
+ 
+    def on_batch_begin(self, batch, logs={}):
+        return
+ 
+    def on_batch_end(self, batch, logs={}):
+        return
+
+    def get_data(self):
+        return self._data
 
 
 # Create mode, optimizer and callbacks for train or test
@@ -148,6 +249,8 @@ if __name__ == '__main__':
                 # Create the callbacks
                 print('\n > Creating callbacks...')
                 cb = Callbacks_Factory().make(cf, tensorboard_path, modelcheckpoint_path, modelcheckpoint_fname)
+                #metrics=Metrics()
+                #cb += [metrics]
 
                 data_path = os.path.join(cf.experiments_path, cf.experiment_name) + '/' + cf.experiment_prefix + str(e) + \
                             '_' + cf.dataset_prefix + str(k) + '_' + str(cf.num_images_for_test) + '_' + \
@@ -155,6 +258,8 @@ if __name__ == '__main__':
 
                 data_path2 = os.path.join(cf.experiments_path, cf.experiment_name) + '/' + cf.experiment_prefix + str(e) +                                                                  '_' + cf.dataset_prefix + str(k) + '_' + str(cf.num_images_for_test) + '_' +                                                                      str(cf.n_splits) + '_' + cf.n_splits_prefix + str(k)
 
+                metrics = Metrics(model, data_path, data_path2)
+                cb += [metrics]
 
                 # Create the data generators
                 train_generator = Dataset_Generator(cf, cf.dataset_images_path,
@@ -187,6 +292,11 @@ if __name__ == '__main__':
                 print(history.history.keys())
                 print(history.history)
 
+                print("\n")
+                print("metrics.get_data() = ",metrics.get_data())
+                print("\n")
+                print("metrics.losses = ", metrics.losses)
+                print("metrics.aucs = ", metrics.aucs)
 
                 # /home/willytell/Experiments/exp1/output/experiment0_dataset0_22_5_kfold0_weights.hdf5
                 weights_path = os.path.join(cf.experiments_path, cf.experiment_name, cf.model_output_directory) + '/' +                                                                   cf.experiment_prefix + str(e) + '_' + cf.dataset_prefix + str(k) + '_' +                                                                      str(cf.num_images_for_test) + '_' + str(cf.n_splits) + '_' + cf.n_splits_prefix +                                                             str(k) + '_' + cf.weights_suffix
@@ -224,7 +334,7 @@ if __name__ == '__main__':
                                                       steps=(validation_generator.total_images // cf.batch_size_valid))
 
                 print("predictions = ", predictions)
-                # print ("np.argmax(predicitons) = ", np.argmax(predictions))
+                print ("np.argmax(predicitons) = ", np.argmax(predictions, axis=1))
                 print("\n")
 
                 rounded_pred_model = np.array([], dtype=np.int64)

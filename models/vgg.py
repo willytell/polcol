@@ -1,4 +1,6 @@
 # Keras imports
+from keras import metrics
+
 from keras.models import Model, Sequential
 from keras.layers import Dense, Dropout, Activation, Flatten
 from keras.layers.convolutional import (Convolution2D, MaxPooling2D,
@@ -8,7 +10,22 @@ from keras.applications.vgg16 import VGG16
 from keras.applications.vgg19 import VGG19
 
 from keras import backend as K
+import tensorflow as tf
+import functools
 
+def as_keras_metric(method):
+    #import functools
+    #from keras import backend as K
+    #import tensorflow as tf
+    @functools.wraps(method)
+    def wrapper(self, args, **kwargs):
+        """ Wrapper for turning tensorflow metrics into keras metrics """
+        value, update_op = method(self, args, **kwargs)
+        K.get_session().run(tf.local_variables_initializer())
+        with tf.control_dependencies([update_op]):
+            value = tf.identity(value)
+        return value
+    return wrapper
 
 # Paper: https://arxiv.org/pdf/1409.1556.pdf
 
@@ -57,7 +74,10 @@ class VGG(object):
         # Compile model
         # For a binary classification problem
         if self.num_classes == 2:
-            model.compile(optimizer=self.optimizer, loss='binary_crossentropy', metrics=['accuracy'])
+            precision = as_keras_metric(tf.metrics.precision)
+            recall = as_keras_metric(tf.metrics.recall)
+            model.compile(optimizer=self.optimizer, loss='binary_crossentropy', metrics=['accuracy', precision, recall])
+            #model.compile(optimizer=self.optimizer, loss='binary_crossentropy', metrics=['accuracy', metrics.binary_accuracy, precision, recall])
         else:
             model.compile(optimizer=self.optimizer, loss='categorical_crossentropy', metrics=['accuracy'])
 

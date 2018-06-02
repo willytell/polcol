@@ -111,9 +111,9 @@ def plot_confusion_matrix(cm, classes, fname,
 
     if normalize:
         cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
-        print("Normalized confusion matrix")
+        print("Normalized " + title)
     else:
-        print('Confusion matrix, without normalization')
+        print(title + ', without normalization')
 
     print(cm)
 
@@ -126,6 +126,8 @@ def plot_confusion_matrix(cm, classes, fname,
     plt.tight_layout()
     plt.ylabel('True label')
     plt.xlabel('Predicted label')
-    plt.savefig(fname) #('confmatrix.jpg')
+
+    if fname is not None:
+        plt.savefig(fname) #('confmatrix.jpg')
 
 
