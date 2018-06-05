@@ -21,7 +21,7 @@ from bounding_box import BBox
 
 from keras.callbacks import Callback
 from sklearn.metrics import recall_score, precision_score
-
+from sklearn.metrics import classification_report
 
 #def new_session():
 #    if K.backend() == 'tensorflow':  # pragma: no cover
@@ -117,6 +117,9 @@ class Metrics(keras.callbacks.Callback):
         print("\n")
         plot_confusion_matrix(cm, cm_plot_labels, fname=None, normalize=True, title='Training Confusion Matrix')
         print("\n")
+
+        target_names = ['No-Neoplasicos', 'Neoplasicos']   #target_names = ['class 0', 'class 1', 'class 2']
+        print(classification_report(y_true, rounded_pred, target_names=target_names))
 
         return
  
@@ -295,7 +298,7 @@ if __name__ == '__main__':
                 print("\n")
                 print("metrics.get_data() = ",metrics.get_data())
                 print("\n")
-                print("metrics.losses = ", metrics.losses)
+                #print("metrics.losses = ", metrics.losses)
                 print("metrics.aucs = ", metrics.aucs)
 
                 # /home/willytell/Experiments/exp1/output/experiment0_dataset0_22_5_kfold0_weights.hdf5
@@ -362,10 +365,14 @@ if __name__ == '__main__':
                         '_' + cf.dataset_prefix + str(k) + '_' + str(cf.num_images_for_test) + '_' + \
                         str(cf.n_splits) + '_' + cf.n_splits_prefix + str(k) + '_' #+ 'cmatrix_validation.jpg'
 
-                plot_confusion_matrix(cm, cm_plot_labels, fname + 'cmatrix_validation.jpg', normalize=False, title='Confusion Matrix')
+                #plot_confusion_matrix(cm, cm_plot_labels, fname + 'cmatrix_validation.jpg', normalize=False, title='Confusion Matrix')
+                plot_confusion_matrix(cm, cm_plot_labels, fname=None, normalize=False, title='Confusion Matrix')
                 print("\n")
-                plot_confusion_matrix(cm, cm_plot_labels, fname + 'cmatrix_normalized_validation.jpg', normalize=True, title='Confusion Matrix')
+                #plot_confusion_matrix(cm, cm_plot_labels, fname + 'cmatrix_normalized_validation.jpg', normalize=True, title='Confusion Matrix')
+                plot_confusion_matrix(cm, cm_plot_labels, fname=None, normalize=True, title='Confusion Matrix')
 
+                target_names = ['No-Neoplasicos', 'Neoplasicos']   #target_names = ['class 0', 'class 1', 'class 2']
+                print(classification_report(y_true, rounded_pred_model, target_names=target_names))
 
                 ###################################################################
 
@@ -373,7 +380,7 @@ if __name__ == '__main__':
 
                 print('\n > Deleting the model.',)
                 #tf_session.clear_session()  
-                del model, train_generator, validation_generator, optimizer, cb
+                del model, train_generator, validation_generator, optimizer, cb, metrics.validation_generator, metrics
                 gc.collect()
 
 
@@ -552,9 +559,11 @@ if __name__ == '__main__':
                                '_' + cf.dataset_prefix + str(k) + '_' + str(cf.num_images_for_test) + '_' + \
                                str(cf.n_splits) + '_' + cf.n_splits_prefix + str(k) + '_' #+ 'cmatrix_testing.jpg'
 
-                plot_confusion_matrix(cm, cm_plot_labels, fname + 'cmatrix_testing.jpg', normalize=False, title='Confusion Matrix')
+                #plot_confusion_matrix(cm, cm_plot_labels, fname + 'cmatrix_testing.jpg', normalize=False, title='Confusion Matrix')
+                plot_confusion_matrix(cm, cm_plot_labels, fname=None, normalize=False, title='Testing Confusion Matrix')
                 print("\n")
-                plot_confusion_matrix(cm, cm_plot_labels, fname + 'cmatrix_normalized_testing.jpg', normalize=True, title='Confusion Matrix')
+                #plot_confusion_matrix(cm, cm_plot_labels, fname + 'cmatrix_normalized_testing.jpg', normalize=True, title='Confusion Matrix')
+                plot_confusion_matrix(cm, cm_plot_labels, fname=None, normalize=True, title='Testing Confusion Matrix')
 
                 #rounded_predictions = model.predict_classes(classes_generator.generate(), 
                 #                                            batch_size=(predict_generator.total_images// cf.batch_size_test), verbose=0)

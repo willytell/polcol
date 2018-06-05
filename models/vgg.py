@@ -76,7 +76,8 @@ class VGG(object):
         if self.num_classes == 2:
             precision = as_keras_metric(tf.metrics.precision)
             recall = as_keras_metric(tf.metrics.recall)
-            model.compile(optimizer=self.optimizer, loss='binary_crossentropy', metrics=['accuracy', precision, recall])
+            auc_roc = as_keras_metric(tf.metrics.auc)
+            model.compile(optimizer=self.optimizer, loss='binary_crossentropy', metrics=['accuracy', precision, recall, auc_roc])
             #model.compile(optimizer=self.optimizer, loss='binary_crossentropy', metrics=['accuracy', metrics.binary_accuracy, precision, recall])
         else:
             model.compile(optimizer=self.optimizer, loss='categorical_crossentropy', metrics=['accuracy'])

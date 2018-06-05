@@ -6,6 +6,23 @@ from keras.layers.convolutional import (Convolution2D, MaxPooling2D, ZeroPadding
 from keras.applications.resnet50 import ResNet50
 from keras import backend as K
 
+import tensorflow as tf
+import functools
+
+def as_keras_metric(method):
+    #import functools
+    #from keras import backend as K
+    #import tensorflow as tf
+    @functools.wraps(method)
+    def wrapper(self, args, **kwargs):
+        """ Wrapper for turning tensorflow metrics into keras metrics """
+        value, update_op = method(self, args, **kwargs)
+        K.get_session().run(tf.local_variables_initializer())
+        with tf.control_dependencies([update_op]):
+            value = tf.identity(value)
+        return value
+    return wrapper
+
 
 # Paper: https://arxiv.org/pdf/1409.1556.pdf
 
@@ -45,7 +62,10 @@ class myResNet50(object):
         # Compile model
         # For a binary classification problem
         if self.num_classes == 2:
-            model.compile(optimizer=self.optimizer, loss='binary_crossentropy', metrics=['accuracy'])
+            precision = as_keras_metric(tf.metrics.precision)
+            recall = as_keras_metric(tf.metrics.recall)
+            auc_roc = as_keras_metric(tf.metrics.auc)
+            model.compile(optimizer=self.optimizer, loss='binary_crossentropy', metrics=['accuracy', precision, recall, auc_roc])
         else:
             model.compile(optimizer=self.optimizer, loss='categorical_crossentropy', metrics=['accuracy'])
 
