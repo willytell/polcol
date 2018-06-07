@@ -3,8 +3,10 @@ from keras.models import Model, Sequential
 from keras.layers import Dense, Dropout, Activation, Flatten
 from keras.layers.convolutional import (Convolution2D, MaxPooling2D, ZeroPadding2D)
 
+
 from keras.applications.resnet50 import ResNet50
 from keras import backend as K
+from sklearn.metrics import fbeta_score
 
 import tensorflow as tf
 import functools
@@ -23,6 +25,11 @@ def as_keras_metric(method):
         return value
     return wrapper
 
+def f2_score(y_true, y_pred):
+    # fbeta_score throws a confusing error if inputs are not numpy arrays
+    #y_true, y_pred, = np.array(y_true), np.array(y_pred)
+    # We need to use average='samples' here, any other average method will generate bogus results
+    return fbeta_score(y_true, y_pred, beta=2)#, average='samples')
 
 # Paper: https://arxiv.org/pdf/1409.1556.pdf
 
@@ -65,7 +72,7 @@ class myResNet50(object):
             precision = as_keras_metric(tf.metrics.precision)
             recall = as_keras_metric(tf.metrics.recall)
             auc_roc = as_keras_metric(tf.metrics.auc)
-            model.compile(optimizer=self.optimizer, loss='binary_crossentropy', metrics=['accuracy', precision, recall, auc_roc])
+            model.compile(optimizer=self.optimizer, loss='binary_crossentropy', metrics=['accuracy', precision, recall, auc_roc, f2_score()])
         else:
             model.compile(optimizer=self.optimizer, loss='categorical_crossentropy', metrics=['accuracy'])
 

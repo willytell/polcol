@@ -20,7 +20,7 @@ from sklearn.metrics import confusion_matrix
 from bounding_box import BBox
 
 from keras.callbacks import Callback
-from sklearn.metrics import recall_score, precision_score
+from sklearn.metrics import recall_score, precision_score, fbeta_score
 from sklearn.metrics import classification_report
 
 #def new_session():
@@ -109,6 +109,8 @@ class Metrics(keras.callbacks.Callback):
             'val_precision': precision_score(y_true, rounded_pred),
             'val_recall': recall_score(y_true, rounded_pred),
         })
+
+        print("fbeta_score = ", fbeta_score(y_true, rounded_pred, beta=2))
 
         cm = confusion_matrix(y_true, rounded_pred)
         cm_plot_labels = ['Noneoplasico', 'Neoplasico']
