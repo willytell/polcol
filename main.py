@@ -20,8 +20,9 @@ from sklearn.metrics import confusion_matrix
 from bounding_box import BBox
 
 from keras.callbacks import Callback
-from sklearn.metrics import recall_score, precision_score, fbeta_score
+from sklearn.metrics import recall_score, precision_score, fbeta_score, f1_score, cohen_kappa_score
 from sklearn.metrics import classification_report
+from imblearn.metrics import classification_report_imbalanced
 
 #def new_session():
 #    if K.backend() == 'tensorflow':  # pragma: no cover
@@ -102,15 +103,24 @@ class Metrics(keras.callbacks.Callback):
         steps = (self.validation_generator.total_images // cf.batch_size_valid)
         y_true = self.validation_generator.history_batch_labels[0:steps * cf.batch_size_valid]
 
-        self.aucs.append(roc_auc_score(y_true, rounded_pred))
+        print("length of rounded_pred_model = ", len(rounded_pred))
+        print("rounded_pred_model = ", rounded_pred)
+        print("            y_true = ", y_true)
+        print("\n")
+        #self.aucs.append(roc_auc_score(y_true, rounded_pred))
 
 
-        self._data.append({
-            'val_precision': precision_score(y_true, rounded_pred),
-            'val_recall': recall_score(y_true, rounded_pred),
-        })
+        #self._data.append({
+        #    'val_precision': precision_score(y_true, rounded_pred),
+        #    'val_recall': recall_score(y_true, rounded_pred),
+        #})
 
-        print("fbeta_score = ", fbeta_score(y_true, rounded_pred, beta=2))
+        print("val_precision = ", precision_score(y_true, rounded_pred))
+        print("val_recall = ", recall_score(y_true, rounded_pred))
+        print("val_f1_score = ", f1_score(y_true, rounded_pred))
+        print("val_fbeta_score = ", fbeta_score(y_true, rounded_pred, beta=2))
+        print("cohen_kappa_score = ", cohen_kappa_score(y_true, rounded_pred))
+        print("roc_auc_score = ", roc_auc_score(y_true, rounded_pred))
 
         cm = confusion_matrix(y_true, rounded_pred)
         cm_plot_labels = ['Noneoplasico', 'Neoplasico']
@@ -122,6 +132,9 @@ class Metrics(keras.callbacks.Callback):
 
         target_names = ['No-Neoplasicos', 'Neoplasicos']   #target_names = ['class 0', 'class 1', 'class 2']
         print(classification_report(y_true, rounded_pred, target_names=target_names))
+        print("\n")
+
+        print(classification_report_imbalanced(y_true, rounded_pred, target_names=target_names))
 
         return
  
@@ -293,15 +306,15 @@ if __name__ == '__main__':
                                     steps_per_epoch=(train_generator.total_images // cf.batch_size_train),
                                     epochs=cf.n_epochs, verbose=1, callbacks=cb)
 
-                print("   history: ")
-                print(history.history.keys())
-                print(history.history)
+                #print("   history: ")
+                #print(history.history.keys())
+                #print(history.history)
 
-                print("\n")
-                print("metrics.get_data() = ",metrics.get_data())
-                print("\n")
+                #print("\n")
+                #print("metrics.get_data() = ",metrics.get_data())
+                #print("\n")
                 #print("metrics.losses = ", metrics.losses)
-                print("metrics.aucs = ", metrics.aucs)
+                #print("metrics.aucs = ", metrics.aucs)
 
                 # /home/willytell/Experiments/exp1/output/experiment0_dataset0_22_5_kfold0_weights.hdf5
                 weights_path = os.path.join(cf.experiments_path, cf.experiment_name, cf.model_output_directory) + '/' +                                                                   cf.experiment_prefix + str(e) + '_' + cf.dataset_prefix + str(k) + '_' +                                                                      str(cf.num_images_for_test) + '_' + str(cf.n_splits) + '_' + cf.n_splits_prefix +                                                             str(k) + '_' + cf.weights_suffix

@@ -68,8 +68,8 @@ TensorBoard_write_images     = False    # Whether to write model weights to visu
 
 # Callback model check point
 checkpoint_enabled           = True            # Enable the Callback
-checkpoint_monitor           = 'val_loss'           # Metric to monitor
-checkpoint_mode              = 'min'           # Mode ['max' | 'min']
+checkpoint_monitor           = 'val_f2_score'           # Metric to monitor
+checkpoint_mode              = 'max'           # Mode ['max' | 'min']
 checkpoint_save_best_only    = True            # Save best or last model
 checkpoint_save_weights_only = True            # Save only weights or also model
 checkpoint_verbose           = 1               # Verbosity of the checkpoint

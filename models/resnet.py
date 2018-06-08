@@ -6,10 +6,11 @@ from keras.layers.convolutional import (Convolution2D, MaxPooling2D, ZeroPadding
 
 from keras.applications.resnet50 import ResNet50
 from keras import backend as K
-from sklearn.metrics import fbeta_score
+from sklearn.metrics import fbeta_score, f1_score
 
 import tensorflow as tf
 import functools
+import numpy as np
 
 def as_keras_metric(method):
     #import functools
@@ -29,7 +30,25 @@ def f2_score(y_true, y_pred):
     # fbeta_score throws a confusing error if inputs are not numpy arrays
     #y_true, y_pred, = np.array(y_true), np.array(y_pred)
     # We need to use average='samples' here, any other average method will generate bogus results
-    return fbeta_score(y_true, y_pred, beta=2)#, average='samples')
+    #y_pred = np.argmax(y_pred, axis=1)
+    #print("len(y_pred) = ", len(y_pred))
+    #return fbeta_score(y_true, y_pred, beta=2)#, average='samples')
+    precision = as_keras_metric(tf.metrics.precision)
+    recall = as_keras_metric(tf.metrics.recall)
+    beta=2
+    beta2 = beta ** 2
+    #r(y_true, y_pred)**2
+    #print("RRRRRRRRRRr = ", r(y_true, y_pred))
+    #return K.mean(y_pred)
+    return ((1 + beta2) * precision(y_true, y_pred) * recall(y_true, y_pred) / (beta2 * precision(y_true, y_pred) + recall(y_true, y_pred) + 1e-7))
+
+
+def f1(y_true, y_pred):
+    precision = as_keras_metric(tf.metrics.precision)
+    recall = as_keras_metric(tf.metrics.recall)
+    beta=1
+    return 2 * ((precision(y_true, y_pred) * recall(y_true, y_pred)) / (precision(y_true, y_pred) + recall(y_true, y_pred) + 1e-7))
+    
 
 # Paper: https://arxiv.org/pdf/1409.1556.pdf
 
@@ -72,7 +91,8 @@ class myResNet50(object):
             precision = as_keras_metric(tf.metrics.precision)
             recall = as_keras_metric(tf.metrics.recall)
             auc_roc = as_keras_metric(tf.metrics.auc)
-            model.compile(optimizer=self.optimizer, loss='binary_crossentropy', metrics=['accuracy', precision, recall, auc_roc, f2_score()])
+            model.compile(optimizer=self.optimizer, loss='binary_crossentropy', metrics=['accuracy', precision, recall, auc_roc, f1, f2_score])
+            #model.compile(optimizer=self.optimizer, loss='binary_crossentropy', metrics=['accuracy', f2_score])
         else:
             model.compile(optimizer=self.optimizer, loss='categorical_crossentropy', metrics=['accuracy'])
 
