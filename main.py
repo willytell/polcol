@@ -303,7 +303,7 @@ if __name__ == '__main__':
                 print('\n > Training the model...')
                 history = model.fit_generator(generator=train_generator.generate(), validation_data=validation_generator.generate(),
                                     validation_steps=(validation_generator.total_images // cf.batch_size_valid),
-                                    steps_per_epoch=(train_generator.total_images // cf.batch_size_train),
+                                    steps_per_epoch=((train_generator.total_images*4) // cf.batch_size_train),
                                     epochs=cf.n_epochs, verbose=1, callbacks=cb)
 
                 #print("   history: ")
