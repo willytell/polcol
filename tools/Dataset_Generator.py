@@ -136,7 +136,7 @@ class Dataset_Generator(object):
 
         if self.mode == 'train':
             self.da_stats = []  # it will store information to be used by data augmentation
-            for _ in len(self.X_neop):
+            for _ in range(len(self.X_neop)):
                 self.da_stats.append([])
 
 
@@ -190,6 +190,7 @@ class Dataset_Generator(object):
 
     def data_augmentation(self, x, idx):
         """ x: is a single image
+            idx: is an index for self.da_stats
         """
 
         if self.apply_augmentation:
@@ -283,4 +284,5 @@ class Dataset_Generator(object):
                     # Build batch of label data, reshape and add to batch
                     lab_batch.append(to_categorical(self.batch_labels[idx], self.n_classes).reshape(self.n_classes))
                 
+                #print("\n >> lab_batch = ", np.array(lab_batch)) 
                 yield (np.array(img_batch), np.array(lab_batch))

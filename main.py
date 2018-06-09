@@ -20,9 +20,11 @@ from sklearn.metrics import confusion_matrix
 from bounding_box import BBox
 
 from keras.callbacks import Callback
-from sklearn.metrics import recall_score, precision_score, fbeta_score, f1_score, cohen_kappa_score
+from sklearn.metrics import recall_score, precision_score, fbeta_score, f1_score, cohen_kappa_score, average_precision_score, precision_recall_fscore_support, accuracy_score, matthews_corrcoef
 from sklearn.metrics import classification_report
 from imblearn.metrics import classification_report_imbalanced
+from sklearn.utils.multiclass import unique_labels
+
 
 #def new_session():
 #    if K.backend() == 'tensorflow':  # pragma: no cover
@@ -66,8 +68,9 @@ import keras
 from sklearn.metrics import roc_auc_score
  
 class Metrics(keras.callbacks.Callback):
-    def __init__(self, model, data_path, data_path2):
+    def __init__(self, model, data_path, data_path2, weights_path):
         self._data = []
+        self.weights_path = weights_path
         self.model = model
         self.validation_generator = Dataset_Generator(cf, cf.dataset_images_path,
                                                  n_classes=cf.num_classes,
@@ -83,8 +86,10 @@ class Metrics(keras.callbacks.Callback):
 
 
     def on_train_begin(self, logs={}):
-        self.aucs = []
+        #self.aucs = []
         #self.losses = []
+        self.f2_list = [-1]
+        self.acc_list = [-1]
  
     def on_train_end(self, logs={}):
         return
@@ -94,7 +99,6 @@ class Metrics(keras.callbacks.Callback):
  
     def on_epoch_end(self, epoch, logs={}):
         #self.losses.append(logs.get('loss'))
-
         # predict_generator(self, generator, steps=None, max_queue_size=10, workers=1, use_multiprocessing=False, verbose=0)
         y_pred = model.predict_generator(generator=self.validation_generator.generate(),
                                               steps=(self.validation_generator.total_images // cf.batch_size_valid))
@@ -103,38 +107,79 @@ class Metrics(keras.callbacks.Callback):
         steps = (self.validation_generator.total_images // cf.batch_size_valid)
         y_true = self.validation_generator.history_batch_labels[0:steps * cf.batch_size_valid]
 
-        print("length of rounded_pred_model = ", len(rounded_pred))
-        print("rounded_pred_model = ", rounded_pred)
-        print("            y_true = ", y_true)
+        labels = unique_labels(y_true, rounded_pred)
+        sample_weight = None
+
+        # ensure, that y_true has at least one 1, because sklearn's fbeta can't handle all-zeros
+        #y_true[:, 0] += 1 - y_true.sum(axis=1).clip(0, 1)
+
+
+        p, r, f1, s = precision_recall_fscore_support(y_true, rounded_pred, labels=labels, average=None, sample_weight=sample_weight)
+
+        #print(">>>>>>>>>>>>>>>>>>>>> ", f1)
+        #print(">>>>>>>>>>>>>>>>>>>>> ", type(f1))
+        #print(">>>>>>>>>>>>>>>>>>>>> ", s)
+        #print(">>>>>>>>>>>>>>>>>>>>> ", np.average(f1, weights=s))
+
+        beta=2
+
+        f2_class0 = fbeta_score(y_true, rounded_pred, beta=beta, labels=labels, pos_label=0, average='binary', sample_weight=None)
+        f2_class1 = fbeta_score(y_true, rounded_pred, beta=beta, labels=labels, pos_label=1, average='binary', sample_weight=None)
+
+        # f2 score averaged
+        f2 = np.average(np.array([f2_class0, f2_class1]), weights=s)
         print("\n")
-        #self.aucs.append(roc_auc_score(y_true, rounded_pred))
+        print("In epoch: {}".format(epoch+1))
+        print("f2-score: {:.6f} ".format(f2))
 
+        #return the fraction of correctly classified samples
+        acc_norm = accuracy_score(y_true, rounded_pred, normalize=True, sample_weight=None)
+        print("Normalized   acc: {:.5f}".format(acc_norm))
 
-        #self._data.append({
-        #    'val_precision': precision_score(y_true, rounded_pred),
-        #    'val_recall': recall_score(y_true, rounded_pred),
-        #})
+        # return the number of correctly classified sample
+        acc = accuracy_score(y_true, rounded_pred, normalize=False, sample_weight=None) 
+        print("Without norm acc: {}".format(acc))
 
-        print("val_precision = ", precision_score(y_true, rounded_pred))
-        print("val_recall = ", recall_score(y_true, rounded_pred))
-        print("val_f1_score = ", f1_score(y_true, rounded_pred))
-        print("val_fbeta_score = ", fbeta_score(y_true, rounded_pred, beta=2))
-        print("cohen_kappa_score = ", cohen_kappa_score(y_true, rounded_pred))
-        print("roc_auc_score = ", roc_auc_score(y_true, rounded_pred))
+        #print("\n")
+        auc = roc_auc_score(y_true, rounded_pred, average='macro', sample_weight=None) 
+        print("roc auc score = ", auc)
+        mcc = matthews_corrcoef(y_true, rounded_pred, sample_weight=None)
+        print("Matthews Correlation Coeficient: {:.6f}".format(mcc))
+        cohen_kappa = cohen_kappa_score(y_true, rounded_pred, labels=labels, weights=None, sample_weight=None)
+        print("cohen_kappa_score: {:.6f} ".format(cohen_kappa))
+
+        print("\n")
+        print("length of rounded_pred_model: ", len(rounded_pred))
+        print("rounded_pred_model: ", rounded_pred)
+        print("            y_true: ", y_true)
+        #print("\n")
 
         cm = confusion_matrix(y_true, rounded_pred)
         cm_plot_labels = ['Noneoplasico', 'Neoplasico']
 
         plot_confusion_matrix(cm, cm_plot_labels, fname=None, normalize=False, title='Training Confusion Matrix')
-        print("\n")
+        #print("\n")
         plot_confusion_matrix(cm, cm_plot_labels, fname=None, normalize=True, title='Training Confusion Matrix')
         print("\n")
 
         target_names = ['No-Neoplasicos', 'Neoplasicos']   #target_names = ['class 0', 'class 1', 'class 2']
-        print(classification_report(y_true, rounded_pred, target_names=target_names))
+        #print(classification_report(y_true, rounded_pred, target_names=target_names))
+        print(classification_report_imbalanced(y_true, rounded_pred, target_names=target_names))
         print("\n")
 
-        print(classification_report_imbalanced(y_true, rounded_pred, target_names=target_names))
+
+        if max(self.f2_list) < f2 and max(self.acc_list) < acc:
+            if cf.checkpoint_enabled and 6 < (epoch+1):
+                print('\n > Saving the model, in epoch {}, to {} '.format(epoch+1, self.weights_path))
+                #if cf.checkpoint_verbose:
+                #     print('')
+                model.save_weights(self.weights_path)
+        
+        if 6 < (epoch+1):   
+            # append the current values
+            self.f2_list.append(f2)
+            self.acc_list.append(acc)
+
 
         return
  
@@ -276,7 +321,11 @@ if __name__ == '__main__':
 
                 data_path2 = os.path.join(cf.experiments_path, cf.experiment_name) + '/' + cf.experiment_prefix + str(e) +                                                                  '_' + cf.dataset_prefix + str(k) + '_' + str(cf.num_images_for_test) + '_' +                                                                      str(cf.n_splits) + '_' + cf.n_splits_prefix + str(k)
 
-                metrics = Metrics(model, data_path, data_path2)
+
+                # /home/willytell/Experiments/exp1/output/experiment0_dataset0_22_5_kfold0_weights.hdf5
+                weights_path = os.path.join(cf.experiments_path, cf.experiment_name, cf.model_output_directory) + '/' +                                                                   cf.experiment_prefix + str(e) + '_' + cf.dataset_prefix + str(k) + '_' +                                                                      str(cf.num_images_for_test) + '_' + str(cf.n_splits) + '_' + cf.n_splits_prefix +                                                             str(k) + '_' + cf.weights_suffix
+
+                metrics = Metrics(model, data_path, data_path2, weights_path)
                 cb += [metrics]
 
                 # Create the data generators
@@ -285,7 +334,7 @@ if __name__ == '__main__':
                                                     batch_size=cf.batch_size_train,
                                                     resize_image=cf.resize_image,
                                                     flag_shuffle=cf.shuffle_train,
-                                                    apply_augmentation=False,
+                                                    apply_augmentation=cf.apply_augmentation,
                                                     sampling_score=None,
                                                     data_path=data_path,
                                                     mode='train')
@@ -300,10 +349,15 @@ if __name__ == '__main__':
                                                          data_path=data_path,
                                                          data_path2=data_path2,
                                                          mode='validation')
+
+                if cf.apply_augmentation:
+                    N = cf.n_augmentation
+                else:
+                    N = 1
                 print('\n > Training the model...')
                 history = model.fit_generator(generator=train_generator.generate(), validation_data=validation_generator.generate(),
                                     validation_steps=(validation_generator.total_images // cf.batch_size_valid),
-                                    steps_per_epoch=((train_generator.total_images*4) // cf.batch_size_train),
+                                    steps_per_epoch=((train_generator.total_images*N) // cf.batch_size_train),
                                     epochs=cf.n_epochs, verbose=1, callbacks=cb)
 
                 #print("   history: ")

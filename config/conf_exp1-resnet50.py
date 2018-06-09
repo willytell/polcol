@@ -74,6 +74,9 @@ checkpoint_save_best_only    = True            # Save best or last model
 checkpoint_save_weights_only = True            # Save only weights or also model
 checkpoint_verbose           = 1               # Verbosity of the checkpoint
 
+# Data augmentation for training
+apply_augmentation	     = True
+
 
 model_output_directory = 'resnet50-from-scratch'
 

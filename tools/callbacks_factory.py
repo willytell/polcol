@@ -34,14 +34,14 @@ class Callbacks_Factory():
                                write_images=cf.TensorBoard_write_images)]
 
         # Define model saving callbacks
-        if cf.checkpoint_enabled:
-            print('   Model Checkpoint')
-            cb += [ModelCheckpoint(filepath=os.path.join(modelcheckpoint_path, modelcheckpoint_fname),
-                                   verbose=cf.checkpoint_verbose,
-                                   monitor=cf.checkpoint_monitor,
-                                   mode=cf.checkpoint_mode,
-                                   save_best_only=cf.checkpoint_save_best_only,
-                                   save_weights_only=cf.checkpoint_save_weights_only)] 
+        #if cf.checkpoint_enabled:
+        #    print('   Model Checkpoint')
+        #    cb += [ModelCheckpoint(filepath=os.path.join(modelcheckpoint_path, modelcheckpoint_fname),
+        #                           verbose=cf.checkpoint_verbose,
+        #                           monitor=cf.checkpoint_monitor,
+        #                           mode=cf.checkpoint_mode,
+        #                           save_best_only=cf.checkpoint_save_best_only,
+        #                           save_weights_only=cf.checkpoint_save_weights_only)] 
 
 
         # Output the list of callbacks

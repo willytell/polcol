@@ -51,7 +51,7 @@ shuffle_test = False           # Whether to shuffle the testing data
 # Training parameters
 optimizer = 'rmsprop'
 learning_rate = 0.0001
-n_epochs = 80
+n_epochs = 200
 
 # Normalization and Standardize
 norm_rescale                       = 1/255.    # Scalar to divide and set range 0-1
@@ -69,12 +69,16 @@ TensorBoard_write_images     = False    # Whether to write model weights to visu
 
 # Callback model check point
 checkpoint_enabled           = True            # Enable the Callback
-checkpoint_monitor           = 'val_loss'           # Metric to monitor
-checkpoint_mode              = 'min'           # Mode ['max' | 'min']
+checkpoint_monitor           = 'val_f2'        # Metric to monitor
+checkpoint_mode              = 'max'           # Mode ['max' | 'min']
 checkpoint_save_best_only    = True            # Save best or last model
 checkpoint_save_weights_only = True            # Save only weights or also model
 checkpoint_verbose           = 1               # Verbosity of the checkpoint
 
+# Data augmentation for training
+apply_augmentation           = False
+n_augmentation               = 4
 
-model_output_directory = 'resnet50-from-scratch-using-bbox-images'
+
+model_output_directory = 'resnet50-from-scratch-bbox-images-without-augmentation'
 
