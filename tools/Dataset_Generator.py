@@ -100,7 +100,7 @@ class Dataset_Generator(object):
         print('   Neop batch size: ' + str(self.neop_batch_size))
 
 
-        if self.mode == 'train' or  self.mode == 'validation':
+        if self.mode == 'train': # or  self.mode == 'validation':
             # ADDING IMAGES TO MAKE DIVISIBLE THE AMOUNT OF IMAGES NECESSARY TO
             # FEED EACH BATCH EVERY TIME
             times_batch_size = (self.total_images // self.batch_size)
@@ -127,7 +127,7 @@ class Dataset_Generator(object):
                 self.neop_size = len(self.X_neop)
                 print('   ===> NEW amount Neop images: ' + str(self.noneo_size))
 
-        if self.mode == 'test':
+        if self.mode == 'test' or self.mode == 'validation':
             self.X_test_global = np.concatenate((self.X_noneo, self.X_neop), axis=0)
             self.y_test_global = np.concatenate((self.y_noneo_class, self.y_neop_class), axis=0)
             if self.shuffle:
@@ -192,16 +192,16 @@ class Dataset_Generator(object):
         """ x: is a single image
             idx: is an index for self.da_stats
         """
+        # Only it is possible to apply data augmentation in train set
+        if self.apply_augmentation and self.mode == 'train':
 
-        if self.apply_augmentation:
-
-            if len(self.da_stats[idx]) == 4:
+            if len(self.da_stats[idx]) == 3:
                 self.da_stats[idx] = []
 
             flag = True
 
             while flag:
-                delta = randint(0, 3)
+                delta = randint(0, 2)
                 if delta not in self.da_stats[idx]:
                     self.da_stats[idx].append(delta)
                     flag = False
@@ -213,8 +213,8 @@ class Dataset_Generator(object):
                 return np.fliplr(x)
             elif delta == 2:
                 return np.flipud(x)
-            elif delta == 3:
-                return np.flipud(np.fliplr(x))
+            #elif delta == 3:
+            #    return np.flipud(np.fliplr(x))
 
         else:
             return x
@@ -226,7 +226,7 @@ class Dataset_Generator(object):
         while True:
 
             for nFiles in range(self.total_images // self.batch_size):
-                if self.mode == 'test':
+                if self.mode == 'test' or self.mode == 'validation':
                     self.batch_fnames = self.X_test_global[nFiles * self.batch_size:(nFiles + 1) * self.batch_size]
                     self.batch_labels = self.y_test_global[nFiles * self.batch_size:(nFiles + 1) * self.batch_size]
                 else:

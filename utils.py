@@ -2,6 +2,11 @@ import os
 import numpy as np
 import random
 
+from sklearn.metrics import recall_score, precision_score, fbeta_score, f1_score, cohen_kappa_score, average_precision_score, precision_recall_fscore_support, accuracy_score, matthews_corrcoef, roc_auc_score
+from sklearn.metrics import classification_report
+from imblearn.metrics import classification_report_imbalanced
+from sklearn.utils.multiclass import unique_labels    
+
 from sklearn.model_selection import StratifiedKFold
 from scipy.misc import imread
 import skimage.transform
@@ -132,4 +137,65 @@ def plot_confusion_matrix(cm, classes, fname,
         plt.xlabel('Predicted label')
         plt.savefig(fname) #('confmatrix.jpg')
 
+
+def print_stats(y_true, rounded_pred, epoch=None, fname=None, normalize=None):
+
+    labels = unique_labels(y_true, rounded_pred)
+    sample_weight = None
+    
+    # ensure, that y_true has at least one 1, because sklearn's fbeta can't handle all-zeros
+    #y_true[:, 0] += 1 - y_true.sum(axis=1).clip(0, 1)
+    
+    p, r, f1, s = precision_recall_fscore_support(y_true, rounded_pred, labels=labels, average=None, sample_weight=sample_weight)
+    
+    # f2-score
+    beta=2
+    
+    f2_class0 = fbeta_score(y_true, rounded_pred, beta=beta, labels=labels, pos_label=0, average='binary', sample_weight=None)
+    f2_class1 = fbeta_score(y_true, rounded_pred, beta=beta, labels=labels, pos_label=1, average='binary', sample_weight=None)
+    
+    # f2 score averaged
+    f2 = np.average(np.array([f2_class0, f2_class1]), weights=s)
+    print("\n")
+    if epoch is not None: print("In epoch: {}".format(epoch+1))
+    print("f2-score f2_class0: {:.6f}".format(f2_class0))
+    print("f2-score f2_class1: {:.6f}".format(f2_class1))
+    print("f2-score: {:.6f} ".format(f2))
+    
+    #return the fraction of correctly classified samples
+    acc_norm = accuracy_score(y_true, rounded_pred, normalize=True, sample_weight=None)
+    print("Normalized acc: {:.6f}".format(acc_norm))
+    
+    # return the number of correctly classified sample
+    acc = accuracy_score(y_true, rounded_pred, normalize=False, sample_weight=None) 
+    print("Without norm acc: {}".format(acc))
+    
+    #print("\n")
+    auc = roc_auc_score(y_true, rounded_pred, average='macro', sample_weight=None) 
+    print("roc auc score: {:.6f}".format(auc))
+    mcc = matthews_corrcoef(y_true, rounded_pred, sample_weight=None)
+    print("Matthews Correlation Coeficient: {:.6f}".format(mcc))
+    cohen_kappa = cohen_kappa_score(y_true, rounded_pred, labels=labels, weights=None, sample_weight=None)
+    print("cohen_kappa_score: {:.6f} ".format(cohen_kappa))
+    
+    print("\n")
+    print("length of rounded_pred_model: ", len(rounded_pred))
+    print("rounded_pred_model: ", rounded_pred)
+    print("            y_true: ", y_true)
+    #print("\n")
+    
+    cm = confusion_matrix(y_true, rounded_pred)
+    cm_plot_labels = ['Noneoplasico', 'Neoplasico']
+    
+    plot_confusion_matrix(cm, cm_plot_labels, fname=None, normalize=False, title='Training Confusion Matrix')
+    #print("\n")
+    plot_confusion_matrix(cm, cm_plot_labels, fname=None, normalize=True, title='Training Confusion Matrix')
+    print("\n")
+    
+    target_names = ['No-Neoplasicos', 'Neoplasicos']   #target_names = ['class 0', 'class 1', 'class 2']
+    #print(classification_report(y_true, rounded_pred, target_names=target_names))
+    print(classification_report_imbalanced(y_true, rounded_pred, target_names=target_names))
+    print("\n")
+
+    return f2, acc
 

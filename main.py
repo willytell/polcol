@@ -4,8 +4,10 @@ from __future__ import (absolute_import, division, print_function,
 import argparse
 import os
 import time
+import sys
 import gc
 import numpy as np
+import keras
 
 from config.configuration import Configuration
 from keepunbalanced import Keep_Unbalanced
@@ -15,12 +17,12 @@ from models.resnet import myResNet50
 from tools.Dataset_Generator import Dataset_Generator
 from tools.callbacks_factory import Callbacks_Factory
 from keras import backend as K
-from utils import plot_confusion_matrix
+from utils import plot_confusion_matrix, print_stats
 from sklearn.metrics import confusion_matrix
 from bounding_box import BBox
 
 from keras.callbacks import Callback
-from sklearn.metrics import recall_score, precision_score, fbeta_score, f1_score, cohen_kappa_score, average_precision_score, precision_recall_fscore_support, accuracy_score, matthews_corrcoef
+from sklearn.metrics import recall_score, precision_score, fbeta_score, f1_score, cohen_kappa_score, average_precision_score, precision_recall_fscore_support, accuracy_score, matthews_corrcoef, roc_auc_score
 from sklearn.metrics import classification_report
 from imblearn.metrics import classification_report_imbalanced
 from sklearn.utils.multiclass import unique_labels
@@ -56,16 +58,7 @@ from sklearn.utils.multiclass import unique_labels
 #    def get_data(self):
 #        return self._data
 #
-import keras
 
-#class Metrics(keras.callbacks.Callback):
-#    def on_epoch_end(self, batch, logs={}):
-#        predict = np.asarray(self.model.predict(self.validation_data[0]))
-#        targ = self.validation_data[1]
-#        print(" ", recall_score(targ, predict))
-#        return
-
-from sklearn.metrics import roc_auc_score
  
 class Metrics(keras.callbacks.Callback):
     def __init__(self, model, data_path, data_path2, weights_path):
@@ -107,72 +100,72 @@ class Metrics(keras.callbacks.Callback):
         steps = (self.validation_generator.total_images // cf.batch_size_valid)
         y_true = self.validation_generator.history_batch_labels[0:steps * cf.batch_size_valid]
 
-        labels = unique_labels(y_true, rounded_pred)
-        sample_weight = None
+        f2, acc = print_stats(y_true, rounded_pred, epoch=epoch)
 
-        # ensure, that y_true has at least one 1, because sklearn's fbeta can't handle all-zeros
-        #y_true[:, 0] += 1 - y_true.sum(axis=1).clip(0, 1)
+        #labels = unique_labels(y_true, rounded_pred)
+        #sample_weight = None
+
+        ## ensure, that y_true has at least one 1, because sklearn's fbeta can't handle all-zeros
+        ##y_true[:, 0] += 1 - y_true.sum(axis=1).clip(0, 1)
 
 
-        p, r, f1, s = precision_recall_fscore_support(y_true, rounded_pred, labels=labels, average=None, sample_weight=sample_weight)
+        #p, r, f1, s = precision_recall_fscore_support(y_true, rounded_pred, labels=labels, average=None, sample_weight=sample_weight)
 
-        #print(">>>>>>>>>>>>>>>>>>>>> ", f1)
-        #print(">>>>>>>>>>>>>>>>>>>>> ", type(f1))
-        #print(">>>>>>>>>>>>>>>>>>>>> ", s)
-        #print(">>>>>>>>>>>>>>>>>>>>> ", np.average(f1, weights=s))
+        ##print(">>>>>>>>>>>>>>>>>>>>> ", f1)
+        ##print(">>>>>>>>>>>>>>>>>>>>> ", type(f1))
+        ##print(">>>>>>>>>>>>>>>>>>>>> ", s)
+        ##print(">>>>>>>>>>>>>>>>>>>>> ", np.average(f1, weights=s))
 
-        beta=2
+        #beta=2
 
-        f2_class0 = fbeta_score(y_true, rounded_pred, beta=beta, labels=labels, pos_label=0, average='binary', sample_weight=None)
-        f2_class1 = fbeta_score(y_true, rounded_pred, beta=beta, labels=labels, pos_label=1, average='binary', sample_weight=None)
+        #f2_class0 = fbeta_score(y_true, rounded_pred, beta=beta, labels=labels, pos_label=0, average='binary', sample_weight=None)
+        #f2_class1 = fbeta_score(y_true, rounded_pred, beta=beta, labels=labels, pos_label=1, average='binary', sample_weight=None)
 
-        # f2 score averaged
-        f2 = np.average(np.array([f2_class0, f2_class1]), weights=s)
-        print("\n")
-        print("In epoch: {}".format(epoch+1))
-        print("f2-score: {:.6f} ".format(f2))
+        ## f2 score averaged
+        #f2 = np.average(np.array([f2_class0, f2_class1]), weights=s)
+        #print("\n")
+        #print("In epoch: {}".format(epoch+1))
+        #print("f2-score: {:.6f} ".format(f2))
 
-        #return the fraction of correctly classified samples
-        acc_norm = accuracy_score(y_true, rounded_pred, normalize=True, sample_weight=None)
-        print("Normalized   acc: {:.5f}".format(acc_norm))
+        ##return the fraction of correctly classified samples
+        #acc_norm = accuracy_score(y_true, rounded_pred, normalize=True, sample_weight=None)
+        #print("Normalized   acc: {:.5f}".format(acc_norm))
 
-        # return the number of correctly classified sample
-        acc = accuracy_score(y_true, rounded_pred, normalize=False, sample_weight=None) 
-        print("Without norm acc: {}".format(acc))
+        ## return the number of correctly classified sample
+        #acc = accuracy_score(y_true, rounded_pred, normalize=False, sample_weight=None) 
+        #print("Without norm acc: {}".format(acc))
+
+        ##print("\n")
+        #auc = roc_auc_score(y_true, rounded_pred, average='macro', sample_weight=None) 
+        #print("roc auc score = ", auc)
+        #mcc = matthews_corrcoef(y_true, rounded_pred, sample_weight=None)
+        #print("Matthews Correlation Coeficient: {:.6f}".format(mcc))
+        #cohen_kappa = cohen_kappa_score(y_true, rounded_pred, labels=labels, weights=None, sample_weight=None)
+        #print("cohen_kappa_score: {:.6f} ".format(cohen_kappa))
 
         #print("\n")
-        auc = roc_auc_score(y_true, rounded_pred, average='macro', sample_weight=None) 
-        print("roc auc score = ", auc)
-        mcc = matthews_corrcoef(y_true, rounded_pred, sample_weight=None)
-        print("Matthews Correlation Coeficient: {:.6f}".format(mcc))
-        cohen_kappa = cohen_kappa_score(y_true, rounded_pred, labels=labels, weights=None, sample_weight=None)
-        print("cohen_kappa_score: {:.6f} ".format(cohen_kappa))
+        #print("length of rounded_pred_model: ", len(rounded_pred))
+        #print("rounded_pred_model: ", rounded_pred)
+        #print("            y_true: ", y_true)
+        ##print("\n")
 
-        print("\n")
-        print("length of rounded_pred_model: ", len(rounded_pred))
-        print("rounded_pred_model: ", rounded_pred)
-        print("            y_true: ", y_true)
+        #cm = confusion_matrix(y_true, rounded_pred)
+        #cm_plot_labels = ['Noneoplasico', 'Neoplasico']
+
+        #plot_confusion_matrix(cm, cm_plot_labels, fname=None, normalize=False, title='Training Confusion Matrix')
+        ##print("\n")
+        #plot_confusion_matrix(cm, cm_plot_labels, fname=None, normalize=True, title='Training Confusion Matrix')
         #print("\n")
 
-        cm = confusion_matrix(y_true, rounded_pred)
-        cm_plot_labels = ['Noneoplasico', 'Neoplasico']
-
-        plot_confusion_matrix(cm, cm_plot_labels, fname=None, normalize=False, title='Training Confusion Matrix')
+        #target_names = ['No-Neoplasicos', 'Neoplasicos']   #target_names = ['class 0', 'class 1', 'class 2']
+        ##print(classification_report(y_true, rounded_pred, target_names=target_names))
+        #print(classification_report_imbalanced(y_true, rounded_pred, target_names=target_names))
         #print("\n")
-        plot_confusion_matrix(cm, cm_plot_labels, fname=None, normalize=True, title='Training Confusion Matrix')
-        print("\n")
-
-        target_names = ['No-Neoplasicos', 'Neoplasicos']   #target_names = ['class 0', 'class 1', 'class 2']
-        #print(classification_report(y_true, rounded_pred, target_names=target_names))
-        print(classification_report_imbalanced(y_true, rounded_pred, target_names=target_names))
-        print("\n")
 
 
         if max(self.f2_list) < f2 and max(self.acc_list) < acc:
             if cf.checkpoint_enabled and 6 < (epoch+1):
-                print('\n > Saving the model, in epoch {}, to {} '.format(epoch+1, self.weights_path))
-                #if cf.checkpoint_verbose:
-                #     print('')
+                print('\n > On-epoch-end: Saving the model, in epoch {}, to {} '.format(epoch+1, self.weights_path))
                 model.save_weights(self.weights_path)
         
         if 6 < (epoch+1):   
@@ -272,7 +265,7 @@ if __name__ == '__main__':
 
                 kfold_start_time = time.time()
                 print("\n")
-                K.clear_session()
+                #K.clear_session()
                 #tf_session = K.get_session()
 
                 # REPLACED BY make()
@@ -323,7 +316,7 @@ if __name__ == '__main__':
 
 
                 # /home/willytell/Experiments/exp1/output/experiment0_dataset0_22_5_kfold0_weights.hdf5
-                weights_path = os.path.join(cf.experiments_path, cf.experiment_name, cf.model_output_directory) + '/' +                                                                   cf.experiment_prefix + str(e) + '_' + cf.dataset_prefix + str(k) + '_' +                                                                      str(cf.num_images_for_test) + '_' + str(cf.n_splits) + '_' + cf.n_splits_prefix +                                                             str(k) + '_' + cf.weights_suffix
+                weights_path = os.path.join(cf.experiments_path, cf.experiment_name, cf.model_output_directory) + '/' +                                                                   cf.experiment_prefix + str(e) + '_' + cf.dataset_prefix + str(k) + '_' +                                                                      str(cf.num_images_for_test) + '_' + str(cf.n_splits) + '_' + cf.n_splits_prefix +                                                             str(k) + '_' + 'on_epoch_end_' + cf.weights_suffix
 
                 metrics = Metrics(model, data_path, data_path2, weights_path)
                 cb += [metrics]
@@ -449,6 +442,10 @@ if __name__ == '__main__':
 
                 print('\n > Deleting the model.',)
                 #tf_session.clear_session()  
+                print('\n')            
+                sys.stdout.flush()
+                K.clear_session()
+                sys.stdout.flush()
                 del model, train_generator, validation_generator, optimizer, cb, metrics.validation_generator, metrics
                 gc.collect()
 
@@ -486,8 +483,8 @@ if __name__ == '__main__':
                 print("\n ---> Init experiment: " + full_name_experiment + " <---")
 
 
-                print("\n")
-                K.clear_session()
+                #print("\n")
+                #K.clear_session()
 
                 model, optimizer = make(cf)
 
@@ -603,11 +600,11 @@ if __name__ == '__main__':
                 #print ("np.argmax(predicitons) = ", np.argmax(predictions))
                 print("\n")
 
-                rounded_pred_model = np.array([], dtype=np.int64)
+                rounded_pred = np.array([], dtype=np.int64)
                 for p in predictions:
-                    rounded_pred_model=np.append(rounded_pred_model, np.argmax(p))
+                    rounded_pred=np.append(rounded_pred, np.argmax(p))
 
-                print ("rounded_pred_model = ", rounded_pred_model)
+                print ("rounded_pred_model = ", rounded_pred)
 
 
                 #print("len(predict_generator.history_batch_labels) = ", len(predict_generator.history_batch_labels))
@@ -620,32 +617,104 @@ if __name__ == '__main__':
                 print("            y_true = ", y_true)
                 print("\n")
 
-                cm = confusion_matrix(y_true, rounded_pred_model)
-                cm_plot_labels = ['Noneoplasico','Neoplasico']
 
-                fname = os.path.join(cf.experiments_path, cf.experiment_name,
-                                            cf.model_output_directory) + '/' + cf.experiment_prefix + str(e) + \
-                               '_' + cf.dataset_prefix + str(k) + '_' + str(cf.num_images_for_test) + '_' + \
-                               str(cf.n_splits) + '_' + cf.n_splits_prefix + str(k) + '_' #+ 'cmatrix_testing.jpg'
-
-                #plot_confusion_matrix(cm, cm_plot_labels, fname + 'cmatrix_testing.jpg', normalize=False, title='Confusion Matrix')
-                plot_confusion_matrix(cm, cm_plot_labels, fname=None, normalize=False, title='Testing Confusion Matrix')
-                print("\n")
-                #plot_confusion_matrix(cm, cm_plot_labels, fname + 'cmatrix_normalized_testing.jpg', normalize=True, title='Confusion Matrix')
-                plot_confusion_matrix(cm, cm_plot_labels, fname=None, normalize=True, title='Testing Confusion Matrix')
-
-                #rounded_predictions = model.predict_classes(classes_generator.generate(), 
-                #                                            batch_size=(predict_generator.total_images// cf.batch_size_test), verbose=0)
-
-                #print ("rounded_predictions = ", rounded_predictions)
-
-
+                ######################################################################3 
+                
+                print_stats(y_true, rounded_pred)
+ 
+                #labels = unique_labels(y_true, rounded_pred)
+                #sample_weight = None
+        
+                ## ensure, that y_true has at least one 1, because sklearn's fbeta can't handle all-zeros
+                ##y_true[:, 0] += 1 - y_true.sum(axis=1).clip(0, 1)
+        
+        
+                #p, r, f1, s = precision_recall_fscore_support(y_true, rounded_pred, labels=labels, average=None, sample_weight=sample_weight)
+        
+                ##print(">>>>>>>>>>>>>>>>>>>>> ", f1)
+                ##print(">>>>>>>>>>>>>>>>>>>>> ", type(f1))
+                ##print(">>>>>>>>>>>>>>>>>>>>> ", s)
+                ##print(">>>>>>>>>>>>>>>>>>>>> ", np.average(f1, weights=s))
+        
+                #beta=2
+        
+                #f2_class0 = fbeta_score(y_true, rounded_pred, beta=beta, labels=labels, pos_label=0, average='binary', sample_weight=None)
+                #f2_class1 = fbeta_score(y_true, rounded_pred, beta=beta, labels=labels, pos_label=1, average='binary', sample_weight=None)
+        
+                ## f2 score averaged
+                #f2 = np.average(np.array([f2_class0, f2_class1]), weights=s)
                 #print("\n")
-                #K.clear_session()
+                ##print("In epoch: {}".format(epoch+1))
+                #print("f2-score: {:.6f} ".format(f2))
+        
+                ##return the fraction of correctly classified samples
+                #acc_norm = accuracy_score(y_true, rounded_pred, normalize=True, sample_weight=None)
+                #print("Normalized   acc: {:.5f}".format(acc_norm))
+        
+                ## return the number of correctly classified sample
+                #acc = accuracy_score(y_true, rounded_pred, normalize=False, sample_weight=None) 
+                #print("Without norm acc: {}".format(acc))
+        
+                ##print("\n")
+                #auc = roc_auc_score(y_true, rounded_pred, average='macro', sample_weight=None) 
+                #print("roc auc score = ", auc)
+                #mcc = matthews_corrcoef(y_true, rounded_pred, sample_weight=None)
+                #print("Matthews Correlation Coeficient: {:.6f}".format(mcc))
+                #cohen_kappa = cohen_kappa_score(y_true, rounded_pred, labels=labels, weights=None, sample_weight=None)
+                #print("cohen_kappa_score: {:.6f} ".format(cohen_kappa))
+        
+                #print("\n")
+                #print("length of rounded_pred_model: ", len(rounded_pred))
+                #print("rounded_pred_model: ", rounded_pred)
+                #print("            y_true: ", y_true)
+                ##print("\n")
+        
+                #cm = confusion_matrix(y_true, rounded_pred)
+                #cm_plot_labels = ['Noneoplasico', 'Neoplasico']
+        
+                #plot_confusion_matrix(cm, cm_plot_labels, fname=None, normalize=False, title='Training Confusion Matrix')
+                ##print("\n")
+                #plot_confusion_matrix(cm, cm_plot_labels, fname=None, normalize=True, title='Training Confusion Matrix')
+                #print("\n")
+        
+                #target_names = ['No-Neoplasicos', 'Neoplasicos']   #target_names = ['class 0', 'class 1', 'class 2']
+                ##print(classification_report(y_true, rounded_pred, target_names=target_names))
+                #print(classification_report_imbalanced(y_true, rounded_pred, target_names=target_names))
+                #print("\n")
 
-                #print('\n > Deleting the model.',)
-                #del model, test_generator, predict_generator, classes_generator, optimizer
-                #gc.collect()
+
+                #######################################################################################3
+
+
+                #cm = confusion_matrix(y_true, rounded_pred_model)
+                #cm_plot_labels = ['Noneoplasico','Neoplasico']
+
+                #fname = os.path.join(cf.experiments_path, cf.experiment_name,
+                #                            cf.model_output_directory) + '/' + cf.experiment_prefix + str(e) + \
+                #               '_' + cf.dataset_prefix + str(k) + '_' + str(cf.num_images_for_test) + '_' + \
+                #               str(cf.n_splits) + '_' + cf.n_splits_prefix + str(k) + '_' #+ 'cmatrix_testing.jpg'
+
+                ##plot_confusion_matrix(cm, cm_plot_labels, fname + 'cmatrix_testing.jpg', normalize=False, title='Confusion Matrix')
+                #plot_confusion_matrix(cm, cm_plot_labels, fname=None, normalize=False, title='Testing Confusion Matrix')
+                #print("\n")
+                ##plot_confusion_matrix(cm, cm_plot_labels, fname + 'cmatrix_normalized_testing.jpg', normalize=True, title='Confusion Matrix')
+                #plot_confusion_matrix(cm, cm_plot_labels, fname=None, normalize=True, title='Testing Confusion Matrix')
+
+                ##rounded_predictions = model.predict_classes(classes_generator.generate(), 
+                ##                                            batch_size=(predict_generator.total_images// cf.batch_size_test), verbose=0)
+
+                ##print ("rounded_predictions = ", rounded_predictions)
+
+
+                print('\n > Deleting the model.',)
+                print("\n")
+                sys.stdout.flush()
+                K.clear_session()
+                sys.stdout.flush()
+
+                del model, test_generator, predict_generator, optimizer # , classes_generator
+                gc.collect()
+
 
                 print("\n ---> Finish experiment: " + full_name_experiment + " <---")
 

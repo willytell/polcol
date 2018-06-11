@@ -2,7 +2,7 @@ import math
 import os
 import resource
 
-from keras.callbacks import TensorBoard, Callback, ModelCheckpoint
+from keras.callbacks import TensorBoard, Callback, ModelCheckpoint, ReduceLROnPlateau, EarlyStopping
 
 class MemoryCallback(Callback):
     def on_epoch_end(self, epoch, log={}):
@@ -34,15 +34,22 @@ class Callbacks_Factory():
                                write_images=cf.TensorBoard_write_images)]
 
         # Define model saving callbacks
-        #if cf.checkpoint_enabled:
-        #    print('   Model Checkpoint')
-        #    cb += [ModelCheckpoint(filepath=os.path.join(modelcheckpoint_path, modelcheckpoint_fname),
-        #                           verbose=cf.checkpoint_verbose,
-        #                           monitor=cf.checkpoint_monitor,
-        #                           mode=cf.checkpoint_mode,
-        #                           save_best_only=cf.checkpoint_save_best_only,
-        #                           save_weights_only=cf.checkpoint_save_weights_only)] 
+        if cf.checkpoint_enabled:
+            print('   Model Checkpoint')
+            cb += [ModelCheckpoint(filepath=os.path.join(modelcheckpoint_path, modelcheckpoint_fname),
+                                   verbose=cf.checkpoint_verbose,
+                                   monitor=cf.checkpoint_monitor,
+                                   mode=cf.checkpoint_mode,
+                                   save_best_only=cf.checkpoint_save_best_only,
+                                   save_weights_only=cf.checkpoint_save_weights_only)]
+        if True:
+            print('   Model ReduceLROnPlateau')
+            cb += [ReduceLROnPlateau(monitor='val_acc', factor=0.8, patience=10, verbose=1, 
+                                                      mode='auto', epsilon=0.0001, cooldown=5, min_lr=0.0001)] 
 
 
+        if True:
+            print('   Model EarlyStopping')
+            cb += [EarlyStopping(monitor="val_loss", mode="min", patience=10)] 
         # Output the list of callbacks
         return cb

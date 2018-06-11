@@ -169,7 +169,7 @@ def gg(y_true, y_pred):
     """Create precision, recall, and fmeasure metrics. Log them directly using tensorflow"""
     num_classes = K.get_variable_shape(y_pred)[1]
     mmm = K.get_variable_shape(y_pred)
-    print("+++++++++++++++++++++++++++ >>>>>>>>>>>> ", mmm)
+    #print("+++++++++++++++++++++++++++ >>>>>>>>>>>> ", mmm)
 
     preds_cats = K.argmax(y_pred, axis=1)
     preds_one_hot = K.one_hot(preds_cats, num_classes)
@@ -264,7 +264,7 @@ class myResNet50(object):
             #recall = as_keras_metric(tf.metrics.recall)
             #auc_roc = as_keras_metric(tf.metrics.auc)
             #model.compile(optimizer=self.optimizer, loss='binary_crossentropy', metrics=['accuracy', precision, recall, auc_roc, f1, f2_score])
-            model.compile(optimizer=self.optimizer, loss='binary_crossentropy', metrics=['accuracy', 'binary_accuracy'])
+            model.compile(optimizer=self.optimizer, loss='binary_crossentropy', metrics=['accuracy'])
             #model.compile(optimizer=self.optimizer, loss='binary_crossentropy', metrics=['accuracy', f2_score])
         else:
             model.compile(optimizer=self.optimizer, loss='categorical_crossentropy', metrics=['accuracy'])
