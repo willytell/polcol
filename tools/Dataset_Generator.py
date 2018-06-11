@@ -134,6 +134,48 @@ class Dataset_Generator(object):
                 shuffle(self.X_test_global, self.y_test_global)
 
 
+
+        if self.mode == 'train':            
+            # Keep this initialization inside of this if ;)
+            self.X_test_global = np.array([])
+            self.y_test_global = np.array([])
+
+            for nFiles in range(self.total_images // self.batch_size):
+                #print("nFiles: {}".format(nFiles))
+                #print("self.total_images // self.batch_size : {}".format(self.total_images // self.batch_size))
+
+                X_noneo_names =        self.X_noneo[nFiles * self.noneo_batch_size:(nFiles + 1) * self.noneo_batch_size]
+                y_noneo_labels = self.y_noneo_class[nFiles * self.noneo_batch_size:(nFiles + 1) * self.noneo_batch_size]
+                #print("\n")
+                #print("len(X_noneo_names): {}".format(len(X_noneo_names)))
+                #print("X_noneo_names: {}".format(X_noneo_names))
+                #print("leng(y_noneo_labels): {}".format(len(y_noneo_labels)))
+                #print("y_noneo_labels: {}".format(y_noneo_labels))
+
+                X_neop_names =        self.X_neop[nFiles * self.neop_batch_size:(nFiles + 1) * self.neop_batch_size]
+                y_neop_labels = self.y_neop_class[nFiles * self.neop_batch_size:(nFiles + 1) * self.neop_batch_size]
+
+                #print("\n")
+                #print("len(X_neop_names): {}".format(len(X_neop_names)))
+                #print("X_neop_names: {}".format(X_neop_names))
+                #print("len(y_neop_labels): {}".format(len(y_neop_labels)))
+                #print("y_neop_labels: {}".format(y_neop_labels))
+
+                X_tmp = np.concatenate((X_noneo_names, X_neop_names), axis=0)
+                y_tmp = np.concatenate((y_noneo_labels, y_neop_labels), axis=0)
+
+
+                self.X_test_global = np.concatenate((self.X_test_global, X_tmp), axis=0)
+                self.y_test_global = np.concatenate((self.y_test_global, y_tmp), axis=0)
+
+                #print("\n")
+                #print("len(self.X_test_global): {}".format(len(self.X_test_global)))
+                #print("self.X_test_global: {}".format(self.X_test_global))
+                #print("len(self.y_test_global): {}".format(len(self.y_test_global)))
+                #print("self.y_test_global: {}".format(self.y_test_global))
+            # DO NOT SHUFFLE, BECAUSE IMAGES ARE READY TO BE TAKEN BY THE BATCH_SIZE
+
+
         if self.mode == 'train':
             self.da_stats = []  # it will store information to be used by data augmentation
             for _ in range(len(self.X_neop)):
@@ -150,6 +192,7 @@ class Dataset_Generator(object):
             broadcast_shape = [1, 1, 3]
             self.mean = np.reshape(self.rgb_mean, broadcast_shape)
             print('   Mean {}: {}'.format(self.mean.shape, self.rgb_mean, self.mean))
+            #print("self.rgb_mean: {}".format(self.rgb_mean))
 
         # Compute std
         if self.featurewise_std_normalization:
@@ -163,6 +206,7 @@ class Dataset_Generator(object):
             broadcast_shape = [1, 1, 3]
             self.std = np.reshape(self.rgb_std, broadcast_shape)
             print('   Std {}: {}'.format(self.std.shape, self.rgb_std))
+            #print("self.rgb_std: {}".format(self.rgb_std))
 
 
     def standardize(self, x):
@@ -173,15 +217,15 @@ class Dataset_Generator(object):
 
         # Standardize
         if self.featurewise_center:
-            if self.mean is not None:
-                x -= self.mean
+            if self.rgb_mean is not None:
+                x -= self.rgb_mean
             else:
                 warnings.warn('This Data_Generator specifies `featurewise_center`, but it hasn\'t'
                               'been fit on any training data')
 
         if self.featurewise_std_normalization:
-            if self.std is not None:
-                x /= (self.std + 1e-7)
+            if self.rgb_std is not None:
+                x /= (self.rgb_std + 1e-7)
             else:
                 warnings.warn('This Data_Generator specifies `featurewise_std_normalization`, but it hasn\'t'
                               'been fit on any training data.')
@@ -195,13 +239,13 @@ class Dataset_Generator(object):
         # Only it is possible to apply data augmentation in train set
         if self.apply_augmentation and self.mode == 'train':
 
-            if len(self.da_stats[idx]) == 3:
+            if len(self.da_stats[idx]) == 4:
                 self.da_stats[idx] = []
 
             flag = True
 
             while flag:
-                delta = randint(0, 2)
+                delta = randint(0, 3)
                 if delta not in self.da_stats[idx]:
                     self.da_stats[idx].append(delta)
                     flag = False
@@ -213,8 +257,8 @@ class Dataset_Generator(object):
                 return np.fliplr(x)
             elif delta == 2:
                 return np.flipud(x)
-            #elif delta == 3:
-            #    return np.flipud(np.fliplr(x))
+            elif delta == 3:
+                return np.flipud(np.fliplr(x))
 
         else:
             return x
@@ -226,27 +270,35 @@ class Dataset_Generator(object):
         while True:
 
             for nFiles in range(self.total_images // self.batch_size):
-                if self.mode == 'test' or self.mode == 'validation':
-                    self.batch_fnames = self.X_test_global[nFiles * self.batch_size:(nFiles + 1) * self.batch_size]
-                    self.batch_labels = self.y_test_global[nFiles * self.batch_size:(nFiles + 1) * self.batch_size]
-                else:
-                    # train or validation
 
-                    X_noneo_names =        self.X_noneo[nFiles * self.noneo_batch_size:(nFiles + 1) * self.noneo_batch_size]
-                    y_noneo_labels = self.y_noneo_class[nFiles * self.noneo_batch_size:(nFiles + 1) * self.noneo_batch_size]
+                #print("\n")
+                #print("MODE: {}".format(self.mode))
 
-                    X_neop_names =        self.X_neop[nFiles * self.neop_batch_size:(nFiles + 1) * self.neop_batch_size]
-                    y_neop_labels = self.y_neop_class[nFiles * self.neop_batch_size:(nFiles + 1) * self.neop_batch_size]
+                #if self.mode == 'train' or self.mode =='validation': 
+                #    print("nFiles: {}".format(nFiles))
+                #    print("self.total_images: {}".format(self.total_images))
+                #    print("self.batch_size: {}".format(self.batch_size))
+                #    print("\n")
+    
+                #    print("self.total_images // self.batch_size : {}".format(self.total_images // self.batch_size))
+                #    print("len(self.X_test_global): {}".format(len(self.X_test_global)))
 
-                    self.batch_fnames = np.concatenate((X_noneo_names, X_neop_names), axis=0)
-                    self.batch_labels = np.concatenate((y_noneo_labels, y_neop_labels), axis=0)
+                self.batch_fnames = self.X_test_global[nFiles * self.batch_size:(nFiles + 1) * self.batch_size]
+                self.batch_labels = self.y_test_global[nFiles * self.batch_size:(nFiles + 1) * self.batch_size]
 
+                #if self.mode == 'train' or self.mode =='validation':
+                #    print("\n")
+                #    print("len(self.batch_fnames): {}".format(len(self.batch_fnames)))
+                #    print("self.batch_fnames: {}".format(self.batch_fnames))
+                #    print("len(self.batch_labels): {}".format(len(self.batch_labels)))
+                #    print("self.batch_labels: {}".format(self.batch_labels))
 
 
                 #print ("\n len(batch_fnames) = ", len(batch_fnames))
                 #print ("\n self.batch_size = ", self.batch_size)
-             
+
                 assert len(self.batch_fnames) == self.batch_size
+
                 #if len(batch_fnames) != self.batch_size:
                 #    print("\n %%%%%%%%%")
                 #    continue
@@ -278,11 +330,14 @@ class Dataset_Generator(object):
                     #     #print("resized")
 
                     image = load_img(os.path.join(self.dataset_images_path, image_name), resize=self.resize_image)
+                    image = self.standardize(image)
 
                     # Add images to batches
                     img_batch.append(self.data_augmentation(image, idx))
                     # Build batch of label data, reshape and add to batch
                     lab_batch.append(to_categorical(self.batch_labels[idx], self.n_classes).reshape(self.n_classes))
+                    #print("SHAPE img_batch: {} , lab_batch: {}: ".format( np.array(img_batch).shape, np.array(lab_batch).shape )) 
                 
                 #print("\n >> lab_batch = ", np.array(lab_batch)) 
+                #print("MODE: {}".format(self.mode))
                 yield (np.array(img_batch), np.array(lab_batch))

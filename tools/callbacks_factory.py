@@ -50,6 +50,6 @@ class Callbacks_Factory():
 
         if True:
             print('   Model EarlyStopping')
-            cb += [EarlyStopping(monitor="val_loss", mode="min", patience=10)] 
+            cb += [EarlyStopping(monitor="val_acc", mode="max", patience=20)] 
         # Output the list of callbacks
         return cb

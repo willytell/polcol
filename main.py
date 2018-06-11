@@ -348,10 +348,7 @@ if __name__ == '__main__':
                 else:
                     N = 1
                 print('\n > Training the model...')
-                history = model.fit_generator(generator=train_generator.generate(), validation_data=validation_generator.generate(),
-                                    validation_steps=(validation_generator.total_images // cf.batch_size_valid),
-                                    steps_per_epoch=((train_generator.total_images*N) // cf.batch_size_train),
-                                    epochs=cf.n_epochs, verbose=1, callbacks=cb)
+                history = model.fit_generator(generator=train_generator.generate(), validation_data=validation_generator.generate(), validation_steps=(validation_generator.total_images // cf.batch_size_valid), steps_per_epoch=((train_generator.total_images*N) // cf.batch_size_train), epochs=cf.n_epochs, verbose=1, callbacks=cb)
 
                 #print("   history: ")
                 #print(history.history.keys())
