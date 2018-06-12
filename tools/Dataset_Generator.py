@@ -14,6 +14,23 @@ from random import randint
 from utils import shuffle
 
 
+###################
+#import skimage.io as io
+#from skimage.color import rgb2gray, gray2rgb
+#import skimage.transform
+import numpy as np
+#from numpy import ma
+#from numpy.linalg import inv
+import scipy.ndimage as ndi
+#from six.moves import range
+import SimpleITK as sitk
+#import threading
+
+#from keras import backend as K
+
+#from tools.save_images import save_img2
+###################
+
 class Dataset_Generator(object):
     def __init__(self, cf, dataset_images_path, n_classes=2, batch_size=5, resize_image=(224, 224), flag_shuffle=True,
                  apply_augmentation=False, sampling_score=None, data_path='data', data_path2=None, mode='train'):
@@ -27,6 +44,27 @@ class Dataset_Generator(object):
         self.featurewise_center = cf.norm_featurewise_center
         self.featurewise_std_normalization = cf.norm_featurewise_std_normalization
         self.mode=mode
+
+        ###################
+        self.rotation_range = cf.da_rotation_range
+        self.height_shift_range = cf.da_height_shift_range
+        self.width_shift_range = cf.da_width_shift_range
+        self.shear_range = cf.da_shear_range
+        self.zoom_range = cf.da_zoom_range
+
+        self.channel_shift_range = cf.da_channel_shift_range
+        self.fill_mode = cf.da_fill_mode
+        self.horizontal_flip = cf.da_horizontal_flip
+        self.vertical_flip = cf.da_vertical_flip
+        self.spline_warp = cf.da_spline_warp
+
+        self.warp_sigma = cf.da_warp_sigma
+        self.warp_grid_size = cf.da_warp_grid_size
+        self.cval = cf.da_cval
+
+        self.crop_size = cf.crop_size_image
+        self.save_to_dir = cf.da_save_to_dir
+        ###################
 
         self.history_batch_fnames = np.array([''])
         self.history_batch_labels = np.array([], dtype=np.int32)
@@ -134,7 +172,6 @@ class Dataset_Generator(object):
                 shuffle(self.X_test_global, self.y_test_global)
 
 
-
         if self.mode == 'train':            
             # Keep this initialization inside of this if ;)
             self.X_test_global = np.array([])
@@ -232,6 +269,304 @@ class Dataset_Generator(object):
 
         return x
 
+    #######################################################
+    #######################################################
+    #######################################################
+    def random_channel_shift(self, x, intensity, channel_axis=0):
+        x = np.rollaxis(x, channel_axis, 0)
+        min_x, max_x = np.min(x), np.max(x)
+        channel_images = [np.clip(x_channel + np.random.uniform(-intensity, intensity), min_x, max_x)
+                          for x_channel in x]
+        x = np.stack(channel_images, axis=0)
+        x = np.rollaxis(x, 0, channel_axis + 1)
+        return x
+
+    def transform_matrix_offset_center(self, matrix, x, y):
+        o_x = float(x) / 2 + 0.5
+        o_y = float(y) / 2 + 0.5
+        offset_matrix = np.array([[1, 0, o_x], [0, 1, o_y], [0, 0, 1]])
+        reset_matrix = np.array([[1, 0, -o_x], [0, 1, -o_y], [0, 0, 1]])
+        transform_matrix = np.dot(np.dot(offset_matrix, matrix), reset_matrix)
+        return transform_matrix
+
+    def apply_transform(self, x,
+                        transform_matrix,
+                        channel_axis=0,
+                        fill_mode='nearest',
+                        cval=0.):
+        """Apply the image transformation specified by a matrix.
+        # Arguments
+            x: 2D numpy array, single image.
+            transform_matrix: Numpy array specifying the geometric transformation.
+            channel_axis: Index of axis for channels in the input tensor.
+            fill_mode: Points outside the boundaries of the input
+                are filled according to the given mode
+                (one of `{'constant', 'nearest', 'reflect', 'wrap'}`).
+            cval: Value used for points outside the boundaries
+                of the input if `mode='constant'`.
+        # Returns
+            The transformed version of the input.
+        """
+        x = np.rollaxis(x, channel_axis, 0)
+        final_affine_matrix = transform_matrix[:2, :2]
+        final_offset = transform_matrix[:2, 2]
+        channel_images = [ndi.interpolation.affine_transform(
+            x_channel,
+            final_affine_matrix,
+            final_offset,
+            order=0,
+            mode=fill_mode,
+            cval=cval) for x_channel in x]
+        x = np.stack(channel_images, axis=0)
+        x = np.rollaxis(x, 0, channel_axis + 1)
+        return x
+
+    def flip_axis(self, x, axis):
+        x = np.asarray(x).swapaxes(axis, 0)
+        x = x[::-1, ...]
+        x = x.swapaxes(0, axis)
+        return x
+        
+        
+    # Pad image
+    def pad_image(self, x, pad_amount, mode='reflect', constant=0.):
+        e = pad_amount
+        shape = list(x.shape)
+        shape[:2] += 2 * e
+        if mode == 'constant':
+            x_padded = np.ones(shape, dtype=np.float32) * constant
+            x_padded[e:-e, e:-e] = x.copy()
+        else:
+            x_padded = np.zeros(shape, dtype=np.float32)
+            x_padded[e:-e, e:-e] = x.copy()
+
+        if mode == 'reflect':
+            x_padded[:e, e:-e] = np.flipud(x[:e, :])  # left edge
+            x_padded[-e:, e:-e] = np.flipud(x[-e:, :])  # right edge
+            x_padded[e:-e, :e] = np.fliplr(x[:, :e])  # top edge
+            x_padded[e:-e, -e:] = np.fliplr(x[:, -e:])  # bottom edge
+            x_padded[:e, :e] = np.fliplr(np.flipud(x[:e, :e]))  # top-left corner
+            x_padded[-e:, :e] = np.fliplr(np.flipud(x[-e:, :e]))  # top-right cor
+            x_padded[:e, -e:] = np.fliplr(np.flipud(x[:e, -e:]))  # bot-left cor
+            x_padded[-e:, -e:] = np.fliplr(np.flipud(x[-e:, -e:]))  # bot-right cor
+        elif mode == 'zero' or mode == 'constant':
+            pass
+        elif mode == 'nearest':
+            x_padded[:e, e:-e] = x[[0], :]  # left edge
+            x_padded[-e:, e:-e] = x[[-1], :]  # right edge
+            x_padded[e:-e, :e] = x[:, [0]]  # top edge
+            x_padded[e:-e, -e:] = x[:, [-1]]  # bottom edge
+            x_padded[:e, :e] = x[[0], [0]]  # top-left corner
+            x_padded[-e:, :e] = x[[-1], [0]]  # top-right corner
+            x_padded[:e, -e:] = x[[0], [-1]]  # bottom-left corner
+            x_padded[-e:, -e:] = x[[-1], [-1]]  # bottom-right corner
+        else:
+            raise ValueError("Unsupported padding mode \"{}\"".format(mode))
+        return x_padded
+
+
+    # Define warp
+    def gen_warp_field(self, shape, sigma=0.1, grid_size=3):
+        # Initialize bspline transform
+        args = shape + (sitk.sitkFloat32,)
+        ref_image = sitk.Image(*args)
+        tx = sitk.BSplineTransformInitializer(ref_image, [grid_size, grid_size])
+
+        # Initialize shift in control points:
+        # mesh size = number of control points - spline order
+        p = sigma * np.random.randn(grid_size + 3, grid_size + 3, 2)
+
+        # Anchor the edges of the image
+        p[:, 0, :] = 0
+        p[:, -1:, :] = 0
+        p[0, :, :] = 0
+        p[-1:, :, :] = 0
+
+        # Set bspline transform parameters to the above shifts
+        tx.SetParameters(p.flatten())
+
+        # Compute deformation field
+        displacement_filter = sitk.TransformToDisplacementFieldFilter()
+        displacement_filter.SetReferenceImage(ref_image)
+        displacement_field = displacement_filter.Execute(tx)
+
+        return displacement_field
+        
+        
+    # Apply warp
+    def apply_warp(self, x, warp_field, fill_mode='reflect',
+                   interpolator=sitk.sitkLinear,
+                   fill_constant=0):
+        # Expand deformation field (and later the image), padding for the largest
+        # deformation
+        warp_field_arr = sitk.GetArrayFromImage(warp_field)
+        max_deformation = np.max(np.abs(warp_field_arr))
+        pad = np.ceil(max_deformation).astype(np.int32)
+        warp_field_padded_arr = self.pad_image(warp_field_arr, pad_amount=pad,
+                                          mode='nearest')
+        warp_field_padded = sitk.GetImageFromArray(warp_field_padded_arr,
+                                                   isVector=True)
+
+        # Warp x, one filter slice at a time
+        x_warped = np.zeros(x.shape, dtype=np.float32)
+        warp_filter = sitk.WarpImageFilter()
+        warp_filter.SetInterpolator(interpolator)
+        warp_filter.SetEdgePaddingValue(np.min(x).astype(np.double))
+        for i, image in enumerate(x):
+            image_padded = self.pad_image(image, pad_amount=pad, mode=fill_mode,
+                                     constant=fill_constant).T
+            image_f = sitk.GetImageFromArray(image_padded)
+            image_f_warped = warp_filter.Execute(image_f, warp_field_padded)
+            image_warped = sitk.GetArrayFromImage(image_f_warped)
+            x_warped[i] = image_warped[pad:-pad, pad:-pad].T
+
+        return x_warped
+
+    def random_transform(self, x):
+        # x is a single image, so it doesn't have image number at index 0
+        img_row_index = 0  # self.row_index - 1
+        img_col_index = 1  # self.col_index - 1
+        img_channel_index = 2  # self.channel_index - 1
+
+        # use composition of homographies to generate final transform that
+        # needs to be applied
+        need_transform = False
+
+        # Rotation
+        if self.rotation_range:
+            theta = np.pi / 180 * np.random.uniform(-self.rotation_range, self.rotation_range)
+            need_transform = True
+        else:
+            theta = 0
+
+        # Shift in height
+        if self.height_shift_range:
+            tx = np.random.uniform(-self.height_shift_range, self.height_shift_range) * x.shape[img_row_index]
+            need_transform = True
+        else:
+            tx = 0
+
+        # Shift in width
+        if self.width_shift_range:
+            ty = np.random.uniform(-self.width_shift_range, self.width_shift_range) * x.shape[img_col_index]
+            need_transform = True
+        else:
+            ty = 0
+
+        # Shear
+        if self.shear_range:
+            shear = np.random.uniform(-self.shear_range, self.shear_range)
+            need_transform = True
+        else:
+            shear = 0
+
+        # Zoom
+        if self.zoom_range[0] == 1 and self.zoom_range[1] == 1:
+            zx, zy = 1, 1
+        else:
+            zx, zy = np.random.uniform(self.zoom_range[0], self.zoom_range[1], 2)
+            need_transform = True
+
+        if need_transform:
+            rotation_matrix = np.array([[np.cos(theta), -np.sin(theta), 0],
+                                        [np.sin(theta), np.cos(theta), 0],
+                                        [0, 0, 1]])
+
+            translation_matrix = np.array([[1, 0, tx],
+                                           [0, 1, ty],
+                                           [0, 0, 1]])
+
+            shear_matrix = np.array([[1, -np.sin(shear), 0],
+                                     [0, np.cos(shear), 0],
+                                     [0, 0, 1]])
+
+            zoom_matrix = np.array([[zx, 0, 0],
+                                    [0, zy, 0],
+                                    [0, 0, 1]])
+
+            transform_matrix = np.dot(np.dot(np.dot(rotation_matrix,
+                                                    translation_matrix),
+                                             shear_matrix), zoom_matrix)
+
+            h, w = x.shape[img_row_index], x.shape[img_col_index]
+            transform_matrix = self.transform_matrix_offset_center(transform_matrix,
+                                                              h, w)
+            x = self.apply_transform(x, transform_matrix, img_channel_index, fill_mode=self.fill_mode, cval=self.cval)
+
+        if self.channel_shift_range != 0:
+            x = self.random_channel_shift(x, self.channel_shift_range, img_channel_index)
+
+        if self.horizontal_flip:
+            if np.random.random() < 0.5:
+                x = self.flip_axis(x, img_col_index)
+
+        if self.vertical_flip:
+            if np.random.random() < 0.5:
+                x = self.flip_axis(x, img_row_index)
+
+        if self.spline_warp:
+            warp_field = self.gen_warp_field(shape=x.shape[-2:],
+                                        sigma=self.warp_sigma,
+                                        grid_size=self.warp_grid_size)
+            x = self.apply_warp(x, warp_field,
+                           interpolator=sitk.sitkLinear,
+                           fill_mode=self.fill_mode, fill_constant=self.cval)
+
+        # Crop
+        # TODO: tf compatible???
+        crop = list(self.crop_size) if self.crop_size else None
+        if crop:
+            # print ('X before: ' + str(x.shape))
+            # print ('Y before: ' + str(y.shape))
+            # print ('Crop_size: ' + str(self.crop_size))
+            h, w = x.shape[img_row_index], x.shape[img_col_index]
+
+            # Padd image if it is smaller than the crop size
+            pad_h1, pad_h2, pad_w1, pad_w2 = 0, 0, 0, 0
+            if h < crop[0]:
+                total_pad = crop[0] - h
+                pad_h1 = total_pad / 2
+                pad_h2 = total_pad - pad_h1
+            if w < crop[1]:
+                total_pad = crop[1] - w
+                pad_w1 = total_pad / 2
+                pad_w2 = total_pad - pad_w1
+            if h < crop[0] or w < crop[1]:
+                x = np.lib.pad(x, ((0, 0), (pad_h1, pad_h2), (pad_w1, pad_w2)),
+                               'constant')
+
+                h, w = x.shape[img_row_index], x.shape[img_col_index]
+                # print ('New size X: ' + str(x.shape))
+                # print ('New size Y: ' + str(y.shape))
+                # exit()
+
+            if crop[0] < h:
+                top = np.random.randint(h - crop[0])
+            else:
+                # print('Data augmentation: Crop height >= image size')
+                top, crop[0] = 0, h
+            if crop[1] < w:
+                left = np.random.randint(w - crop[1])
+            else:
+                # print('Data augmentation: Crop width >= image size')
+                left, crop[1] = 0, w
+
+            # self.dim_ordering = 'tf'
+            x = x[..., top:top + crop[0], left:left + crop[1], :]
+
+            # print ('X after: ' + str(x.shape))
+            # print ('Y after: ' + str(y.shape))
+
+        # TODO: save to dir images transformed.
+
+        return x
+
+    #######################################################
+    #######################################################
+    #######################################################
+
+
+
     def data_augmentation(self, x, idx):
         """ x: is a single image
             idx: is an index for self.da_stats
@@ -239,26 +574,28 @@ class Dataset_Generator(object):
         # Only it is possible to apply data augmentation in train set
         if self.apply_augmentation and self.mode == 'train':
 
-            if len(self.da_stats[idx]) == 4:
-                self.da_stats[idx] = []
-
-            flag = True
-
-            while flag:
-                delta = randint(0, 3)
-                if delta not in self.da_stats[idx]:
-                    self.da_stats[idx].append(delta)
-                    flag = False
-
-
-            if delta == 0:
-                return x
-            elif delta == 1:
-                return np.fliplr(x)
-            elif delta == 2:
-                return np.flipud(x)
-            elif delta == 3:
-                return np.flipud(np.fliplr(x))
+            return self.random_transform(x)
+            # if len(self.da_stats[idx]) == 4:
+            #     self.da_stats[idx] = []
+            #
+            # flag = True
+            # delta = 0
+            #
+            # while flag:
+            #     delta = randint(0, 3)
+            #     if delta not in self.da_stats[idx]:
+            #         self.da_stats[idx].append(delta)
+            #         flag = False
+            #
+            #
+            # if delta == 0:
+            #     return x
+            # elif delta == 1:
+            #     return np.fliplr(x)
+            # elif delta == 2:
+            #     return np.flipud(x)
+            # elif delta == 3:
+            #     return np.flipud(np.fliplr(x))
 
         else:
             return x
