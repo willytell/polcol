@@ -93,7 +93,7 @@ class Metrics(keras.callbacks.Callback):
     def on_epoch_end(self, epoch, logs={}):
         #self.losses.append(logs.get('loss'))
         # predict_generator(self, generator, steps=None, max_queue_size=10, workers=1, use_multiprocessing=False, verbose=0)
-        y_pred = model.predict_generator(generator=self.validation_generator.generate(),
+        y_pred = self.model.predict_generator(generator=self.validation_generator.generate(),
                                               steps=(self.validation_generator.total_images // cf.batch_size_valid))
 
         rounded_pred = np.argmax(y_pred, axis=1)
@@ -166,7 +166,7 @@ class Metrics(keras.callbacks.Callback):
         if max(self.f2_list) < f2 and max(self.acc_list) < acc:
             if cf.checkpoint_enabled and 6 < (epoch+1):
                 print('\n > On-epoch-end: Saving the model, in epoch {}, to {} '.format(epoch+1, self.weights_path))
-                model.save_weights(self.weights_path)
+                self.model.save_weights(self.weights_path)
         
         if 6 < (epoch+1):   
             # append the current values
@@ -364,74 +364,80 @@ if __name__ == '__main__':
                 weights_path = os.path.join(cf.experiments_path, cf.experiment_name, cf.model_output_directory) + '/' +                                                                   cf.experiment_prefix + str(e) + '_' + cf.dataset_prefix + str(k) + '_' +                                                                      str(cf.num_images_for_test) + '_' + str(cf.n_splits) + '_' + cf.n_splits_prefix +                                                             str(k) + '_' + cf.weights_suffix
 
 
+                # save the current weights if it wasn't saved any model before.
                 if not cf.checkpoint_enabled:
                     print('\n > Saving the model to ', weights_path)
                     model.save_weights(weights_path)
 
 
                 ###################################################################
-                validation_start_time = time.time()
-                print('\n > Validating the model... using validatin set')
-                # evaluate_generator(self, generator, steps=None, max_queue_size=10, workers=1, use_multiprocessing=False, verbose=0)
-                score = model.evaluate_generator(generator=validation_generator.generate(),
-                                                 steps=(validation_generator.total_images // cf.batch_size_test))  # , \
-                # max_queue_size=10, \
-                # workers=1, \
-                # use_multiprocessing=False)
-                validation_elapsed_time = time.time() - validation_start_time
+ 
+                # TODO: take the best model and validate (again) it. Review this part of code.
 
-                FPS = validation_generator.total_images / validation_elapsed_time
-                SPF = validation_elapsed_time / validation_generator.total_images
-                print("   Validation time: {:.11f}. FPS: {:.11f}. Seconds per Frame: {:.11f}".format(
-                    validation_elapsed_time, FPS, SPF))
-                print("   Validation metrics:")
-                print("      acc: {:.6f}, ".format(score[1]))
-                print("      loss: {:.12f}".format(score[0]))
-                # print("   Loss: ", score[0], "Accuracy: ", score[1])
-                print("\n")
+                # it must load the best model!
+
+                #validation_start_time = time.time()
+                #print('\n > Validating the model... using validatin set')
+                ## evaluate_generator(self, generator, steps=None, max_queue_size=10, workers=1, use_multiprocessing=False, verbose=0)
+                #score = model.evaluate_generator(generator=validation_generator.generate(),
+                #                                 steps=(validation_generator.total_images // cf.batch_size_test))  # , \
+                ## max_queue_size=10, \
+                ## workers=1, \
+                ## use_multiprocessing=False)
+                #validation_elapsed_time = time.time() - validation_start_time
+
+                #FPS = validation_generator.total_images / validation_elapsed_time
+                #SPF = validation_elapsed_time / validation_generator.total_images
+                #print("   Validation time: {:.11f}. FPS: {:.11f}. Seconds per Frame: {:.11f}".format(
+                #    validation_elapsed_time, FPS, SPF))
+                #print("   Validation metrics:")
+                #print("      acc: {:.6f}, ".format(score[1]))
+                #print("      loss: {:.12f}".format(score[0]))
+                ## print("   Loss: ", score[0], "Accuracy: ", score[1])
+                #print("\n")
 
 
-                # predict_generator(self, generator, steps=None, max_queue_size=10, workers=1, use_multiprocessing=False, verbose=0)
-                predictions = model.predict_generator(generator=validation_generator.generate(),
-                                                      steps=(validation_generator.total_images // cf.batch_size_valid))
+                ## predict_generator(self, generator, steps=None, max_queue_size=10, workers=1, use_multiprocessing=False, verbose=0)
+                #predictions = model.predict_generator(generator=validation_generator.generate(),
+                #                                      steps=(validation_generator.total_images // cf.batch_size_valid))
 
-                print("predictions = ", predictions)
-                print ("np.argmax(predicitons) = ", np.argmax(predictions, axis=1))
-                print("\n")
+                #print("predictions = ", predictions)
+                #print ("np.argmax(predicitons) = ", np.argmax(predictions, axis=1))
+                #print("\n")
 
-                rounded_pred_model = np.array([], dtype=np.int64)
-                for p in predictions:
-                    rounded_pred_model = np.append(rounded_pred_model, np.argmax(p))
+                #rounded_pred_model = np.array([], dtype=np.int64)
+                #for p in predictions:
+                #    rounded_pred_model = np.append(rounded_pred_model, np.argmax(p))
 
-                print("length of rounded_pred_model = ", len(rounded_pred_model))
-                print("rounded_pred_model = ", rounded_pred_model)
+                #print("length of rounded_pred_model = ", len(rounded_pred_model))
+                #print("rounded_pred_model = ", rounded_pred_model)
 
-                # print("len(predict_generator.history_batch_labels) = ", len(predict_generator.history_batch_labels))
-                # print("predict_generator.history_batch_labels = ", predict_generator.history_batch_labels)
+                ## print("len(predict_generator.history_batch_labels) = ", len(predict_generator.history_batch_labels))
+                ## print("predict_generator.history_batch_labels = ", predict_generator.history_batch_labels)
 
-                steps = (validation_generator.total_images // cf.batch_size_valid)
-                y_true = validation_generator.history_batch_labels[0:steps * cf.batch_size_valid]
-                # y_true = predict_generator.history_batch_labels[0:len(predict_generator.history_batch_labels)-cf.batch_size_test]
-                # print("len(y_true) = ", len(y_true))
-                print("            y_true = ", y_true)
-                print("\n")
+                #steps = (validation_generator.total_images // cf.batch_size_valid)
+                #y_true = validation_generator.history_batch_labels[0:steps * cf.batch_size_valid]
+                ## y_true = predict_generator.history_batch_labels[0:len(predict_generator.history_batch_labels)-cf.batch_size_test]
+                ## print("len(y_true) = ", len(y_true))
+                #print("            y_true = ", y_true)
+                #print("\n")
 
-                cm = confusion_matrix(y_true, rounded_pred_model)
-                cm_plot_labels = ['Noneoplasico', 'Neoplasico']
+                #cm = confusion_matrix(y_true, rounded_pred_model)
+                #cm_plot_labels = ['Noneoplasico', 'Neoplasico']
 
-                fname = os.path.join(cf.experiments_path, cf.experiment_name,
-                                     cf.model_output_directory) + '/' + cf.experiment_prefix + str(e) + \
-                        '_' + cf.dataset_prefix + str(k) + '_' + str(cf.num_images_for_test) + '_' + \
-                        str(cf.n_splits) + '_' + cf.n_splits_prefix + str(k) + '_' #+ 'cmatrix_validation.jpg'
+                #fname = os.path.join(cf.experiments_path, cf.experiment_name,
+                #                     cf.model_output_directory) + '/' + cf.experiment_prefix + str(e) + \
+                #        '_' + cf.dataset_prefix + str(k) + '_' + str(cf.num_images_for_test) + '_' + \
+                #        str(cf.n_splits) + '_' + cf.n_splits_prefix + str(k) + '_' #+ 'cmatrix_validation.jpg'
 
-                #plot_confusion_matrix(cm, cm_plot_labels, fname + 'cmatrix_validation.jpg', normalize=False, title='Confusion Matrix')
-                plot_confusion_matrix(cm, cm_plot_labels, fname=None, normalize=False, title='Confusion Matrix')
-                print("\n")
-                #plot_confusion_matrix(cm, cm_plot_labels, fname + 'cmatrix_normalized_validation.jpg', normalize=True, title='Confusion Matrix')
-                plot_confusion_matrix(cm, cm_plot_labels, fname=None, normalize=True, title='Confusion Matrix')
+                ##plot_confusion_matrix(cm, cm_plot_labels, fname + 'cmatrix_validation.jpg', normalize=False, title='Confusion Matrix')
+                #plot_confusion_matrix(cm, cm_plot_labels, fname=None, normalize=False, title='Confusion Matrix')
+                #print("\n")
+                ##plot_confusion_matrix(cm, cm_plot_labels, fname + 'cmatrix_normalized_validation.jpg', normalize=True, title='Confusion Matrix')
+                #plot_confusion_matrix(cm, cm_plot_labels, fname=None, normalize=True, title='Confusion Matrix')
 
-                target_names = ['No-Neoplasicos', 'Neoplasicos']   #target_names = ['class 0', 'class 1', 'class 2']
-                print(classification_report(y_true, rounded_pred_model, target_names=target_names))
+                #target_names = ['No-Neoplasicos', 'Neoplasicos']   #target_names = ['class 0', 'class 1', 'class 2']
+                #print(classification_report(y_true, rounded_pred_model, target_names=target_names))
 
                 ###################################################################
 

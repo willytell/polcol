@@ -4,21 +4,21 @@ echo "begining..."
 
 #echo "====>"
 
-#CUDA_VISIBLE_DEVICES=0 python3 main.py -c config/conf_dist1-resnet50-with_bbox-without_augmentation.py -a train &>logs/dist1-resnet50-with_bbox-without_augmentation-train
+CUDA_VISIBLE_DEVICES=0 python3 main.py -c config/conf_dist1-resnet50-with_bbox-without_augmentation.py -a train &>logs/dist1-resnet50-with_bbox-without_augmentation-train
 
-#CUDA_VISIBLE_DEVICES=0 python3 main.py -c config/conf_dist1-resnet50-with_bbox-without_augmentation.py -a test &>logs/dist1-resnet50-with_bbox-without_augmentation-test
+CUDA_VISIBLE_DEVICES=0 python3 main.py -c config/conf_dist1-resnet50-with_bbox-without_augmentation.py -a test &>logs/dist1-resnet50-with_bbox-without_augmentation-test
 
 
 echo "====>"
-CUDA_VISIBLE_DEVICES=0 python3 main.py -c config/conf_dist1-resnet50-with_bbox-with_augmentation.py -a train &>logs/dist1-resnet50-with_bbox-with_augmentation-train
+#CUDA_VISIBLE_DEVICES=0 python3 main.py -c config/conf_dist1-resnet50-with_bbox-with_augmentation.py -a train &>logs/dist1-resnet50-with_bbox-with_augmentation-train
 
-CUDA_VISIBLE_DEVICES=0 python3 main.py -c config/conf_dist1-resnet50-with_bbox-with_augmentation.py -a test &>logs/dist1-resnet50-with_bbox-with_augmentation-test
+#CUDA_VISIBLE_DEVICES=0 python3 main.py -c config/conf_dist1-resnet50-with_bbox-with_augmentation.py -a test &>logs/dist1-resnet50-with_bbox-with_augmentation-test
 
 
 #echo "====>"
-#CUDA_VISIBLE_DEVICES=0 python3 main.py -c config/conf_dist1-resnet50-with_bbox-with_augmentation_2flip.py -a train &>logs/dist1-resnet50-with_bbox-with_augmentation_2flip-train
+CUDA_VISIBLE_DEVICES=0 python3 main.py -c config/conf_dist1-resnet50-with_bbox-with_augmentation_2flip.py -a train &>logs/dist1-resnet50-with_bbox-with_augmentation_2flip-train
 
-#CUDA_VISIBLE_DEVICES=0 python3 main.py -c config/conf_dist1-resnet50-with_bbox-with_augmentation_2flip.py -a test &>logs/dist1-resnet50-with_bbox-with_augmentation_2flip-test
+CUDA_VISIBLE_DEVICES=0 python3 main.py -c config/conf_dist1-resnet50-with_bbox-with_augmentation_2flip.py -a test &>logs/dist1-resnet50-with_bbox-with_augmentation_2flip-test
 
 
 #CUDA_VISIBLE_DEVICES=0 python3 main.py -c config/conf_exp1-vgg.py -a train &>logs/vgg-from-scratch-train

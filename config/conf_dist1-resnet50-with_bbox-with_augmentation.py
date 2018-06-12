@@ -50,7 +50,7 @@ shuffle_test  = False           # Whether to shuffle the testing data
 
 # Training parameters
 optimizer = 'rmsprop'
-learning_rate = 0.0001
+learning_rate = 0.001
 n_epochs = 200
 
 # Normalization and Standardize

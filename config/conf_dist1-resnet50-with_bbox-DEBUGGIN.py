@@ -50,7 +50,7 @@ shuffle_test  = False           # Whether to shuffle the testing data
 
 # Training parameters
 optimizer = 'rmsprop'
-learning_rate = 0.001
+learning_rate = 0.0001
 n_epochs = 200
 
 # Normalization and Standardize
@@ -76,8 +76,8 @@ checkpoint_save_weights_only = True            # Save only weights or also model
 checkpoint_verbose           = 1               # Verbosity of the checkpoint
 
 # Data augmentation for training
-apply_augmentation           = True
-n_augmentation               = 3
+apply_augmentation           = False
+n_augmentation               = 4
 
 
-model_output_directory = 'resnet50-from-scratch-bbox-images-with-augmentation_2flip'
+model_output_directory = 'resnet50-from-scratch-bbox-images-DEBUGGING'

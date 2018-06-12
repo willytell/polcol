@@ -45,11 +45,11 @@ class Callbacks_Factory():
         if True:
             print('   Model ReduceLROnPlateau')
             cb += [ReduceLROnPlateau(monitor='val_acc', factor=0.8, patience=10, verbose=1, 
-                                                      mode='auto', epsilon=0.0001, cooldown=5, min_lr=0.0001)] 
+                                                      mode='auto', epsilon=0.0001, cooldown=5, min_lr=0.00001)] 
 
 
-        if True:
+        if False:
             print('   Model EarlyStopping')
-            cb += [EarlyStopping(monitor="val_acc", mode="max", patience=20)] 
+            cb += [EarlyStopping(monitor="val_loss", mode="min", patience=30, verbose=1)] 
         # Output the list of callbacks
         return cb
