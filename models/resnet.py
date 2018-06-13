@@ -2,7 +2,7 @@
 from keras.models import Model, Sequential
 from keras.layers import Dense, Dropout, Activation, Flatten
 from keras.layers.convolutional import (Convolution2D, MaxPooling2D, ZeroPadding2D)
-from concise.metrics import tpr
+#from concise.metrics import tpr
 
 from keras.applications.resnet50 import ResNet50
 from keras import backend as K

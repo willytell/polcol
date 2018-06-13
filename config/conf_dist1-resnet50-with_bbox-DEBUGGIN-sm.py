@@ -2,9 +2,9 @@
 
 # Experiment configuration
 experiment_name = "exp1-whole_image"
-experiments_path= "/home/willytell/Experiments"
+experiments_path= "/imatge/mgorriz/work/Guillermo/Experiments"
 experiment_prefix = "experiment"
-num_repetition_experiment = 10      # Repeat n times the experiment
+num_repetition_experiment = 1      # Repeat n times the experiment
 
 # Cross validation
 num_images_for_test = 24
@@ -16,15 +16,15 @@ num_classes = 2
 # Dataset conf
 dataset_division_strategy = "keep-unbalanced" # keep unbalanced rates of each classes from the original dataset
 dataset_prefix = "dataset"
-dataset_directory = "/home/willytell/Documentos/MCV/M9/TFM/ExperCNN"
+dataset_directory = "/imatge/mgorriz/work/Guillermo/ExperCNN"
 images_filenames = "images_filenames.txt"
 labels = "binary_classification.txt"
-#dataset_images_path = "/home/willytell/Documentos/MCV/M9/TFM/ExperCNN/Original"   # all images are in this folder
-dataset_images_path = "/home/willytell/Documentos/MCV/M9/TFM/ExperCNN/BBox"   # all images are in this folder
+#dataset_images_path = "/imatge/mgorriz/work/Guillermo/ExperCNN/Original"   # all images are in this folder
+dataset_images_path = "/imatge/mgorriz/work/Guillermo/ExperCNN/BBox"   # all images are in this folder
 
 # Generate images using bounding boxes of masks.
-dataset_mask_directory = "/home/willytell/Documentos/MCV/M9/TFM/ExperCNN/GT"
-bbox_output_path       = "/home/willytell/Documentos/MCV/M9/TFM/ExperCNN/BBox"    # directory to write the images from mask
+dataset_mask_directory = "/imatge/mgorriz/work/Guillermo/ExperCNN/GT"
+bbox_output_path       = "/imatge/mgorriz/work/Guillermo/ExperCNN/BBox"    # directory to write the images from mask
 
 # Model
 model_name = 'resnet50'
@@ -82,22 +82,22 @@ checkpoint_save_weights_only = True            # Save only weights or also model
 checkpoint_verbose           = 1               # Verbosity of the checkpoint
 
 # Data augmentation for training
-apply_augmentation           = False
-n_augmentation               = 4
+apply_augmentation           = True 
+n_augmentation               = 20
 
-da_rotation_range            = 0          # Rnd rotation degrees 0-180
-da_width_shift_range         = 0.0        # Rnd horizontal shift
-da_height_shift_range        = 0.0        # Rnd vertical shift
-da_shear_range               = 0.0        # Shear in radians
-da_zoom_range                = 0.0        # Zoom
+da_rotation_range            = 179        # Rnd rotation degrees 0-180
+da_width_shift_range         = 0.05       # Rnd horizontal shift
+da_height_shift_range        = 0.05       # Rnd vertical shift
+da_shear_range               = 0.122173   # Shear in radians
+da_zoom_range                = [1, 1]     # Zoom
 da_channel_shift_range       = 0.         # Channecf.l shifts
 da_fill_mode                 = 'constant' # Fill mode
 da_cval                      = 0.         # Void image value
-da_horizontal_flip           = False      # Rnd horizontal flip
-da_vertical_flip             = False      # Rnd vertical flip
-da_spline_warp               = False      # Enable elastic deformation
-da_warp_sigma                = 0         # Elastic deformation sigma
-da_warp_grid_size            = 0          # Elastic deformation gridSize
+da_horizontal_flip           = True       # Rnd horizontal flip
+da_vertical_flip             = True       # Rnd vertical flip
+da_spline_warp               = True       # Enable elastic deformation
+da_warp_sigma                = 0.01       # Elastic deformation sigma
+da_warp_grid_size            = 1          # Elastic deformation gridSize
 da_save_to_dir               = False      # Save the images for debuging
 
 
