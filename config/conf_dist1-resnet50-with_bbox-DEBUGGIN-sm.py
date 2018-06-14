@@ -55,8 +55,8 @@ shuffle_test  = False           # Whether to shuffle the testing data
 
 
 # Training parameters
-optimizer = 'rmsprop'
-learning_rate = 0.0001
+optimizer = 'sgd'
+learning_rate = 0.00001
 n_epochs = 200
 
 # Normalization and Standardize
@@ -83,15 +83,15 @@ checkpoint_verbose           = 1               # Verbosity of the checkpoint
 
 # Data augmentation for training
 apply_augmentation           = True 
-n_augmentation               = 20
+n_augmentation               = 10
 
-da_rotation_range            = 179        # Rnd rotation degrees 0-180
-da_width_shift_range         = 0.05       # Rnd horizontal shift
-da_height_shift_range        = 0.05       # Rnd vertical shift
-da_shear_range               = 0.122173   # Shear in radians
+da_rotation_range            = 90         # Rnd rotation degrees 0-180
+da_width_shift_range         = 0.0        # Rnd horizontal shift
+da_height_shift_range        = 0.0        # Rnd vertical shift
+da_shear_range               = 0.0872665  # Shear in radians
 da_zoom_range                = [1, 1]     # Zoom
 da_channel_shift_range       = 0.         # Channecf.l shifts
-da_fill_mode                 = 'constant' # Fill mode
+da_fill_mode                 = 'nearest'  # Fill mode ['constant' | 'nearest']
 da_cval                      = 0.         # Void image value
 da_horizontal_flip           = True       # Rnd horizontal flip
 da_vertical_flip             = True       # Rnd vertical flip
