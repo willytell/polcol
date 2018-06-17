@@ -5,6 +5,9 @@ import warnings
 import numpy as np
 import glob
 import os
+import math
+import sys
+
 from keras.utils import to_categorical
 from random import shuffle, randint
 from scipy.misc import imread
@@ -32,13 +35,14 @@ import SimpleITK as sitk
 ###################
 
 class Dataset_Generator(object):
-    def __init__(self, cf, dataset_images_path, n_classes=2, batch_size=5, resize_image=(224, 224), flag_shuffle=True,
-                 apply_augmentation=False, sampling_score=None, data_path='data', data_path2=None, mode='train'):
+    def __init__(self, cf, dataset_images_path, n_classes=2, batch_size=5, resize_image=(224, 224), shuffle_dataset=False, 
+                 shuffle_batch=False, apply_augmentation=False, sampling_score=None, data_path='data', data_path2=None, mode='train'):
 
         self.dataset_images_path = dataset_images_path
         self.batch_size = batch_size
         self.n_classes = n_classes
-        self.shuffle = flag_shuffle
+        self.shuffle_dataset = shuffle_dataset
+        self.shuffle_batch = shuffle_batch
         self.resize_image = resize_image
         self.rescale = cf.norm_rescale
         self.featurewise_center = cf.norm_featurewise_center
@@ -168,11 +172,15 @@ class Dataset_Generator(object):
         if self.mode == 'test' or self.mode == 'validation':
             self.X_test_global = np.concatenate((self.X_noneo, self.X_neop), axis=0)
             self.y_test_global = np.concatenate((self.y_noneo_class, self.y_neop_class), axis=0)
-            if self.shuffle:
+            if self.shuffle_dataset:
                 shuffle(self.X_test_global, self.y_test_global)
 
 
-        if self.mode == 'train':            
+        if self.mode == 'train':           
+            if self.shuffle_dataset:
+                shuffle(self.X_noneo, self.y_noneo_class)
+                shuffle(self.X_neop, self.y_neop_class)
+
             # Keep this initialization inside of this if ;)
             self.X_test_global = np.array([])
             self.y_test_global = np.array([])
@@ -504,46 +512,49 @@ class Dataset_Generator(object):
             if np.random.random() < 0.5:
                 x = self.flip_axis(x, img_row_index)
 
-        if self.spline_warp:
-            warp_field = self.gen_warp_field(shape=x.shape[-2:],
-                                        sigma=self.warp_sigma,
-                                        grid_size=self.warp_grid_size)
-            x = self.apply_warp(x, warp_field,
-                           interpolator=sitk.sitkLinear,
-                           fill_mode=self.fill_mode, fill_constant=self.cval)
+        #if self.spline_warp:
+        #    warp_field = self.gen_warp_field(shape=x.shape[-2:],
+        #                                sigma=self.warp_sigma,
+        #                                grid_size=self.warp_grid_size)
+        #    x = self.apply_warp(x, warp_field,
+        #                   interpolator=sitk.sitkLinear,
+        #                   fill_mode=self.fill_mode, fill_constant=self.cval)
 
         # Crop
         # TODO: tf compatible???
         crop = list(self.crop_size) if self.crop_size else None
         if crop:
-            # print ('X before: ' + str(x.shape))
+            #print ('X before: ' + str(x.shape))
             # print ('Y before: ' + str(y.shape))
-            # print ('Crop_size: ' + str(self.crop_size))
+            #print ('Crop_size: ' + str(self.crop_size))
             h, w = x.shape[img_row_index], x.shape[img_col_index]
 
             # Padd image if it is smaller than the crop size
             pad_h1, pad_h2, pad_w1, pad_w2 = 0, 0, 0, 0
             if h < crop[0]:
                 total_pad = crop[0] - h
-                pad_h1 = total_pad / 2
+                pad_h1 = math.ceil(total_pad / 2)
                 pad_h2 = total_pad - pad_h1
             if w < crop[1]:
                 total_pad = crop[1] - w
-                pad_w1 = total_pad / 2
+                pad_w1 = math.ceil(total_pad / 2)
                 pad_w2 = total_pad - pad_w1
             if h < crop[0] or w < crop[1]:
-                x = np.lib.pad(x, ((0, 0), (pad_h1, pad_h2), (pad_w1, pad_w2)),
-                               'constant')
+                #print ("pad_h1: {}".format(pad_h1))
+                #print ("pad_h2: {}".format(pad_h2))
+                #print ("pad_w1: {}".format(pad_w1))
+                #print ("pad_w2: {}".format(pad_w2))
+                x = np.lib.pad(x, ((pad_h1, pad_h2), (pad_w1, pad_w2), (0, 0)), 'constant')
 
                 h, w = x.shape[img_row_index], x.shape[img_col_index]
-                # print ('New size X: ' + str(x.shape))
+                #print ('=====>>>> New size X: ' + str(x.shape))
                 # print ('New size Y: ' + str(y.shape))
                 # exit()
 
             if crop[0] < h:
                 top = np.random.randint(h - crop[0])
             else:
-                # print('Data augmentation: Crop height >= image size')
+                #print('Data augmentation: Crop height >= image size')
                 top, crop[0] = 0, h
             if crop[1] < w:
                 left = np.random.randint(w - crop[1])
@@ -554,7 +565,7 @@ class Dataset_Generator(object):
             # self.dim_ordering = 'tf'
             x = x[..., top:top + crop[0], left:left + crop[1], :]
 
-            # print ('X after: ' + str(x.shape))
+            #print ('>>>>>>>>>>>>>>X after: ' + str(x.shape))
             # print ('Y after: ' + str(y.shape))
 
         # TODO: save to dir images transformed.
@@ -565,8 +576,83 @@ class Dataset_Generator(object):
     #######################################################
     #######################################################
 
+    def crop(self, x, mode=None):
+        crop = list(self.crop_size) if self.crop_size else None
+        img_row_index = 0  # self.row_index - 1
+        img_col_index = 1  # self.col_index - 1
+        img_channel_index = 2  # self.channel_index - 1
+        #print ('X before: ' + str(x.shape))
+        # print ('Y before: ' + str(y.shape))
+        #print ('Crop_size: ' + str(self.crop_size))
+        h, w = x.shape[img_row_index], x.shape[img_col_index]
+    
+        # Padd image if it is smaller than the crop size
+        pad_h1, pad_h2, pad_w1, pad_w2 = 0, 0, 0, 0
+        if h < crop[0]:
+            total_pad = crop[0] - h
+            pad_h1 = math.ceil(total_pad / 2)
+            pad_h2 = total_pad - pad_h1
+        if w < crop[1]:
+            total_pad = crop[1] - w
+            pad_w1 = math.ceil(total_pad / 2)
+            pad_w2 = total_pad - pad_w1
+        if h < crop[0] or w < crop[1]:
+            #print ("pad_h1: {}".format(pad_h1))
+            #print ("pad_h2: {}".format(pad_h2))
+            #print ("pad_w1: {}".format(pad_w1))
+            #print ("pad_w2: {}".format(pad_w2))
+            x = np.lib.pad(x, ((pad_h1, pad_h2), (pad_w1, pad_w2), (0, 0)), 'constant')
+        
+            h, w = x.shape[img_row_index], x.shape[img_col_index]
+            #print ('=====>>>> New size X: ' + str(x.shape))
+            # print ('New size Y: ' + str(y.shape))
+            # exit()
+        
+        if mode == None:
+            if crop[0] < h:
+                top = np.random.randint(h - crop[0])
+            else:
+                #print('Data augmentation: Crop height >= image size')
+                top, crop[0] = 0, h
+            if crop[1] < w:
+                left = np.random.randint(w - crop[1])
+            else:
+                # print('Data augmentation: Crop width >= image size')
+                left, crop[1] = 0, w
+        
+            # self.dim_ordering = 'tf'
+            x = x[..., top:top + crop[0], left:left + crop[1], :]
+        
+            #print ('>>>>>>>>>>>>>>X after: ' + str(x.shape))
+            # print ('Y after: ' + str(y.shape))
+        elif mode == 'center':
+            center_h = (h // 2)
+            center_w = (w // 2)
+            top = center_h - (crop[0]//2)
+            left = center_w - (crop[1]//2)
+    
+            #print("center_h: ", center_h)
+            #print("center_w: ", center_w)
+            #print("crop[0]//2: ", crop[0]//2)
+            #print("crop[1]//2: ", crop[1]//2)
+            #print("top: ",top)
+            #print("left: ",left)
+            #print(">>>> X before: " + str(x.shape))
+    
+            x = x[..., top:top + crop[0], left:left + crop[1], :]
+        
+    
+            #print(">>>> X after: " + str(x.shape))
+    
+    
+        # TODO: save to dir images transformed.
+        
+        return x
 
 
+
+
+    ##############################################
     def data_augmentation(self, x, idx):
         """ x: is a single image
             idx: is an index for self.da_stats
@@ -575,6 +661,12 @@ class Dataset_Generator(object):
         if self.apply_augmentation and self.mode == 'train':
 
             return self.random_transform(x)
+
+            #if self.y_test_global[idx] == 0:
+            #    return self.random_transform(x)
+            #else:
+            #    return x
+
             # if len(self.da_stats[idx]) == 4:
             #     self.da_stats[idx] = []
             #
@@ -654,7 +746,7 @@ class Dataset_Generator(object):
                 img_batch = []
                 lab_batch = []
 
-                if self.shuffle:
+                if self.shuffle_batch:
                     shuffle(self.batch_fnames, self.batch_labels)
 
                 # Create the batch_x and batch_y
@@ -665,12 +757,22 @@ class Dataset_Generator(object):
                     # if self.resize_image is not None:
                     #     image = skimage.transform.resize(image, self.resize_image, order=1, preserve_range=True)
                     #     #print("resized")
+                    
+                    #print("Reading image: {}",format(os.path.join(self.dataset_images_path, image_name)))
+                    #sys.stdout.flush()
 
-                    image = load_img(os.path.join(self.dataset_images_path, image_name), resize=self.resize_image)
+                    #image = load_img(os.path.join(self.dataset_images_path, image_name), resize=self.resize_image)
+                    image = load_img(os.path.join(self.dataset_images_path, image_name), resize=None)
+                    image = np.asarray(image, dtype='float32')
                     image = self.standardize(image)
+                    if self.mode == 'train':
+                        image = self.data_augmentation(image, idx)
+                    else:
+                        image = self.crop(image, 'center')
+                        #image = skimage.transform.resize(image, (224, 224), order=1, preserve_range=True)
 
                     # Add images to batches
-                    img_batch.append(self.data_augmentation(image, idx))
+                    img_batch.append(image)
                     # Build batch of label data, reshape and add to batch
                     lab_batch.append(to_categorical(self.batch_labels[idx], self.n_classes).reshape(self.n_classes))
                     #print("SHAPE img_batch: {} , lab_batch: {}: ".format( np.array(img_batch).shape, np.array(lab_batch).shape )) 

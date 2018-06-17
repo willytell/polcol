@@ -70,7 +70,7 @@ def load_img(path, resize=None, order=1, preserve_range=True):
     # print('Desired resize: ' + str(resize))
     if resize is not None:
         img = skimage.transform.resize(img, resize, order=order, preserve_range=preserve_range)
-        # print('Final resize: ' + str(img.shape))
+        print('Final resize: ' + str(img.shape))
 
     # Return image
     return img

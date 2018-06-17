@@ -44,11 +44,11 @@ class Callbacks_Factory():
                                    save_weights_only=cf.checkpoint_save_weights_only)]
         if True:
             print('   Model ReduceLROnPlateau')
-            cb += [ReduceLROnPlateau(monitor='val_acc', factor=0.8, patience=10, verbose=1, 
+            cb += [ReduceLROnPlateau(monitor='val_loss', factor=0.8, patience=5, verbose=1, 
                                                       mode='auto', epsilon=0.0001, cooldown=5, min_lr=0.00001)] 
 
 
-        if False:
+        if True:
             print('   Model EarlyStopping')
             cb += [EarlyStopping(monitor="val_loss", mode="min", patience=30, verbose=1)] 
         # Output the list of callbacks
