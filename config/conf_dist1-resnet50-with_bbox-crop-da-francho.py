@@ -2,7 +2,7 @@
 
 # Experiment configuration
 experiment_name = "exp1-whole_image"
-experiments_path= "/home/willytell/Experiments"
+experiments_path= "C:\\Users\\guille\\Experiments"
 experiment_prefix = "experiment"
 num_repetition_experiment = 10      # Repeat n times the experiment
 
@@ -16,15 +16,15 @@ num_classes = 2
 # Dataset conf
 dataset_division_strategy = "keep-unbalanced" # keep unbalanced rates of each classes from the original dataset
 dataset_prefix = "dataset"
-dataset_directory = "/home/willytell/Documentos/MCV/M9/TFM/ExperCNN"
+dataset_directory = "C:\\Users\\guille\\Documents\\MCV\\M9\\TFM\\ExperCNN"
 images_filenames = "images_filenames.txt"
 labels = "binary_classification.txt"
 #dataset_images_path = "/home/willytell/Documentos/MCV/M9/TFM/ExperCNN/Original"   # all images are in this folder
-dataset_images_path = "/home/willytell/Documentos/MCV/M9/TFM/ExperCNN/BBox"   # all images are in this folder
+dataset_images_path = "C:\\Users\\guille\\Documents\\MCV\\M9\\TFM\\ExperCNN\\BBox"   # all images are in this folder
 
 # Generate images using bounding boxes of masks.
-dataset_mask_directory = "/home/willytell/Documentos/MCV/M9/TFM/ExperCNN/GT"
-bbox_output_path       = "/home/willytell/Documentos/MCV/M9/TFM/ExperCNN/BBox"    # directory to write the images from mask
+dataset_mask_directory = "C:\\Users\\guille\\Documents\\MCV\\M9\\TFM\\ExperCNN\\GT"
+bbox_output_path       = "C:\\Users\\guille\\Documents\\MCV\\M9\\TFM\\ExperCNN\\BBox"    # directory to write the images from mask
 
 
 # Model
