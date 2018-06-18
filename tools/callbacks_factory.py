@@ -1,13 +1,13 @@
 import math
 import os
-import resource
+#import resource
 
 from keras.callbacks import TensorBoard, Callback, ModelCheckpoint, ReduceLROnPlateau, EarlyStopping
 
-class MemoryCallback(Callback):
-    def on_epoch_end(self, epoch, log={}):
-        #print("\n > Memory: maximum resident set size used {} MB.", resource.getrusage(resource.RUSAGE_SELF).ru_maxrss//1024)
-        print("\n > Main memory RAM size used: {:.2f} GB.".format((resource.getrusage(resource.RUSAGE_SELF).ru_maxrss/1024)/1024))
+#class MemoryCallback(Callback):
+#    def on_epoch_end(self, epoch, log={}):
+#        #print("\n > Memory: maximum resident set size used {} MB.", resource.getrusage(resource.RUSAGE_SELF).ru_maxrss//1024)
+#        print("\n > Main memory RAM size used: {:.2f} GB.".format((resource.getrusage(resource.RUSAGE_SELF).ru_maxrss/1024)/1024))
 
 # Create callbacks
 class Callbacks_Factory():
@@ -18,9 +18,9 @@ class Callbacks_Factory():
         cb = []
 
         # Memory usage
-        if cf.memory_usage_enabled:
-            print('   Memory usage')
-            cb += [MemoryCallback()]
+        #if cf.memory_usage_enabled:
+        #    print('   Memory usage')
+        #    cb += [MemoryCallback()]
 
         # TensorBoard callback
         if cf.TensorBoard_enabled:
