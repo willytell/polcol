@@ -100,6 +100,14 @@ class Metrics(keras.callbacks.Callback):
         rounded_pred = np.argmax(y_pred, axis=1)
         steps = (self.validation_generator.total_images // cf.batch_size_valid)
         y_true = self.validation_generator.history_batch_labels[0:steps * cf.batch_size_valid]
+        y_fnames = self.validation_generator.history_batch_fnames[0:steps * cf.batch_size_valid]
+        print("\ny_fnames = ")
+        print(y_fnames)
+
+        print("\ny_pred = ")
+        print(y_pred)
+        sys.stdout.flush()
+
 
         f2, acc = print_stats(y_true, rounded_pred, epoch=epoch)
 

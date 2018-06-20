@@ -2,7 +2,7 @@
 
 # Experiment configuration
 experiment_name = "exp1-whole_image"
-experiments_path= "/home/willytell/Experiments"
+experiments_path= "C:\\Users\\guille\\Experiments"
 experiment_prefix = "experiment"
 num_repetition_experiment = 10      # Repeat n times the experiment
 
@@ -16,15 +16,15 @@ num_classes = 2
 # Dataset conf
 dataset_division_strategy = "keep-unbalanced" # keep unbalanced rates of each classes from the original dataset
 dataset_prefix = "dataset"
-dataset_directory = "/home/willytell/Documentos/MCV/M9/TFM/ExperCNN"
+dataset_directory = "C:\\Users\\guille\\Documents\\MCV\\M9\\TFM\\ExperCNN"
 images_filenames = "images_filenames.txt"
 labels = "binary_classification.txt"
 #dataset_images_path = "/home/willytell/Documentos/MCV/M9/TFM/ExperCNN/Original"   # all images are in this folder
-dataset_images_path = "/home/willytell/Documentos/MCV/M9/TFM/ExperCNN/BBox"   # all images are in this folder
+dataset_images_path = "C:\\Users\\guille\\Documents\\MCV\\M9\\TFM\\ExperCNN\\BBox"   # all images are in this folder
 
 # Generate images using bounding boxes of masks.
-dataset_mask_directory = "/home/willytell/Documentos/MCV/M9/TFM/ExperCNN/GT"
-bbox_output_path       = "/home/willytell/Documentos/MCV/M9/TFM/ExperCNN/BBox"    # directory to write the images from mask
+dataset_mask_directory = "C:\\Users\\guille\\Documents\\MCV\\M9\\TFM\\ExperCNN\\GT"
+bbox_output_path       = "C:\\Users\\guille\\Documents\\MCV\\M9\\TFM\\ExperCNN\\BBox"    # directory to write the images from mask
 
 
 # Model
@@ -39,7 +39,7 @@ batch_size_train = 8            # Batch size during training
 batch_size_valid = 3            # Batch size during validation
 batch_size_test  = 6            # Batch size during testing
 
-resize_image                  = (224, 224)       # Resize the image during training (Height, Width) or None
+resize_image                  = (224, 224)      # Resize the image during training (Height, Width) or None
 #resize_train                 = (224, 224)      # Resize the image during training (Height, Width) or None
 #resize_valid                 = (224, 224)      # Resize the image during validation
 #resize_test                  = (224, 224)      # Resize the image during testing
@@ -87,9 +87,9 @@ checkpoint_verbose           = 1               # Verbosity of the checkpoint
 
 # Data augmentation for training
 apply_augmentation           = True 
-n_augmentation               = 7
+n_augmentation               = 20
 
-da_rotation_range            = 30         # Rnd rotation degrees 0-180
+da_rotation_range            = 25          # Rnd rotation degrees 0-180
 da_width_shift_range         = 0.01       # Rnd horizontal shift
 da_height_shift_range        = 0.01       # Rnd vertical shift
 da_shear_range               = 0.02       # Shear in radians
@@ -99,11 +99,11 @@ da_fill_mode                 = 'constant' # Fill mode ['constant' | 'nearest']
 da_cval                      = 0.         # Void image value
 da_horizontal_flip           = True       # Rnd horizontal flip
 da_vertical_flip             = True       # Rnd vertical flip
-da_spline_warp               = True       # Enable elastic deformation
+da_spline_warp               = False      # Enable elastic deformation
 da_warp_sigma                = 0.01       # Elastic deformation sigma
 da_warp_grid_size            = 1          # Elastic deformation gridSize
 da_save_to_dir               = False      # Save the images for debuging
 
 
 
-model_output_directory = 'resnet50-from-scratch-bbox-da-class_weights-imagenet'
+model_output_directory = 'resnet50-from-scratch-bbox-imagenet-francho'
