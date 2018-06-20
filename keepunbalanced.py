@@ -1,4 +1,5 @@
 import os
+import sys
 import numpy as np
 from utils import read_data, rate, filter_by_class, shuffle, dataset_bins_idx
 
@@ -82,6 +83,7 @@ class Keep_Unbalanced(object):
             print(self.X_test)
             print('y_test:')
             print(self.y_test)
+            print('\n')
 
             cad = cf.experiment_prefix + str(self.number_of_experiment) + '_' + cf.dataset_prefix + '_' + str(cf.num_images_for_test) + '_' + \
                   str(cf.n_splits)
@@ -213,6 +215,8 @@ class Keep_Unbalanced(object):
                 np.save(os.path.join(cf.output_path, cad2 + 'X_train_noneo_bin_idx'), self.train_noneo_bin_idx)
 
                 # Printing the division of the dataset
+                print('\n   > ' + cad2 + ':')
+
                 print('\n > X_validation_neop')
                 print(self.X_validation_neop)
                 print('\n > y_validation_neop')
@@ -232,6 +236,8 @@ class Keep_Unbalanced(object):
                 print(self.X_train_noneo)
                 print('\n > y_train_noneo')
                 print(self.y_train_noneo)
+
+                sys.stdout.flush()
 
                 pick_one_bin_for_validation = pick_one_bin_for_validation + 1
 

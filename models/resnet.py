@@ -241,6 +241,7 @@ class myResNet50(object):
         # Decide if load pretrained weights from imagenet
         if load_pretrained:
             weights = 'imagenet'
+            print('    Loading pretrained weights: imageNet')
         else:
             weights = None
 
@@ -270,9 +271,9 @@ class myResNet50(object):
             model.compile(optimizer=self.optimizer, loss='categorical_crossentropy', metrics=['accuracy'])
 
         # Load pretrained weights
-        if cf.load_pretrained:
-            print('   loading model weights from: ' + cf.weights_file + '...')
-            model.load_weights(cf.weights_file, by_name=True)
+        #if cf.load_pretrained:
+        #    print('   loading model weights from: ' + cf.weights_file + '...')
+        #    model.load_weights(cf.weights_file, by_name=True)
 
         # Show model structure
         if cf.show_model:

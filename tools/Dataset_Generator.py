@@ -793,6 +793,7 @@ class Dataset_Generator(object):
                     lab_batch.append(to_categorical(self.batch_labels[idx], self.n_classes).reshape(self.n_classes))
                     #print("SHAPE img_batch: {} , lab_batch: {}: ".format( np.array(img_batch).shape, np.array(lab_batch).shape )) 
                 
+
                 #print("\n >> lab_batch = ", np.array(lab_batch)) 
                 #print("MODE: {}".format(self.mode))
                 yield (np.array(img_batch), np.array(lab_batch))

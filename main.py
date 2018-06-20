@@ -207,7 +207,8 @@ def make (cf):
         model = VGG(cf.num_classes, optimizer).build_vgg(cf, img_rows=224, img_cols=224, input_channels=3,
                                                          n_layers=16)
     elif cf.model_name == 'resnet50':
-        model = myResNet50(cf.num_classes, optimizer).build_resnet50(cf, img_rows=224, img_cols=224, input_channels=3)
+        model = myResNet50(cf.num_classes, optimizer).build_resnet50(cf, img_rows=224, img_cols=224, input_channels=3, 
+                                                                     load_pretrained=cf.load_imageNet)
     else:
         raise ValueError('Unknow model')
 
