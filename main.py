@@ -352,7 +352,7 @@ if __name__ == '__main__':
                     N = 1
                 print('\n > Training the model...')
 
-                class_weights = {0: 1.72289156627, 1:1.}
+                class_weights = None #{0: 1.72289156627, 1:1.}
                 print('\n > class weights: ', class_weights)
 
                 history = model.fit_generator(generator=train_generator.generate(), validation_data=validation_generator.generate(), 
