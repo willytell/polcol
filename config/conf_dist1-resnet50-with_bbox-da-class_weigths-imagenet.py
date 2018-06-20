@@ -54,13 +54,13 @@ crop_size_image               = None       # [(224, 224) | None]
 shuffle_train       = False     # Whether to shuffle the training data
 shuffle_valid       = False     # Whether to shuffle the validation data
 shuffle_test        = False     # Whether to shuffle the testing data
-batch_shuffle_train = False     # Whether to shuffle the (mini) batch training data 
+batch_shuffle_train = True      # Whether to shuffle the (mini) batch training data 
 batch_shuffle_valid = False     # Whether to shuffle the (mini) batch valid data 
 batch_shuffle_test  = False     # Whether to shuffle the (mini) batch test data 
 
 # Training parameters
 optimizer = 'adam'
-learning_rate = 0.00001
+learning_rate = 0.01
 n_epochs = 200
 
 # Normalization and Standardize
