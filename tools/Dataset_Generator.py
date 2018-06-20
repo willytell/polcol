@@ -70,6 +70,10 @@ class Dataset_Generator(object):
         self.save_to_dir = cf.da_save_to_dir
         ###################
 
+        self.imageNet = cf.load_imageNet
+
+        ##############
+
         self.history_batch_fnames = np.array([''])
         self.history_batch_labels = np.array([], dtype=np.int32)
 
@@ -255,6 +259,16 @@ class Dataset_Generator(object):
 
 
     def standardize(self, x):
+        if self.imageNet:
+            # assuming tf ordering
+            # 'RGB'->'BGR'
+            x = x[:, :, ::-1]
+            # Zero-center by mean pixel
+            x[:, :, 0] -= 103.939
+            x[:, :, 1] -= 116.779
+            x[:, :, 2] -= 123.68
+            return x
+
 
         # Normalize
         if self.rescale:
@@ -761,15 +775,17 @@ class Dataset_Generator(object):
                     #print("Reading image: {}",format(os.path.join(self.dataset_images_path, image_name)))
                     #sys.stdout.flush()
 
-                    #image = load_img(os.path.join(self.dataset_images_path, image_name), resize=self.resize_image)
-                    image = load_img(os.path.join(self.dataset_images_path, image_name), resize=None)
-                    image = np.asarray(image, dtype='float32')
+                    image = load_img(os.path.join(self.dataset_images_path, image_name), resize=self.resize_image)
+                    image = np.asarray(image, dtype='float32')   # image = image.astype('float32')
                     image = self.standardize(image)
                     if self.mode == 'train':
                         image = self.data_augmentation(image, idx)
                     else:
-                        image = self.crop(image, 'center')
-                        #image = skimage.transform.resize(image, (224, 224), order=1, preserve_range=True)
+                        if self.crop_size is not None:
+                            image = self.crop(image, 'center')
+
+
+                    #image = skimage.transform.resize(image, self.resize_image, order=1, preserve_range=True)
 
                     # Add images to batches
                     img_batch.append(image)

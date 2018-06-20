@@ -34,29 +34,35 @@ class Keep_Unbalanced(object):
 
     # Leave One-Out: preparing the Test set
     def leave_one_out(self, cf):
-        self.test_noneo_images = int(round(cf.num_images_for_test * self.proportion[1]))  # proportion[1] means the rate of the NOneoplasia of 37%
-        self.test_neop_images = (cf.num_images_for_test - self.test_noneo_images)
-
+        if cf.num_images_for_test > 0:
+            self.test_noneo_images = int(round(cf.num_images_for_test * self.proportion[1]))  # proportion[1] means the rate of the NOneoplasia of 37%
+            self.test_neop_images = (cf.num_images_for_test - self.test_noneo_images)
+        else:
+            # when our test set has 0 images for test, exceptional case.
+            self.test_noneo_images = 0
+            self.test_neop_images = 0
+    
         # test images used from noneo
         self.X_test_noneo = np.copy(self.X_noneo[0:self.test_noneo_images])
         self.y_test_noneo = np.copy(self.y_noneo[0:self.test_noneo_images])
-
+    
         # rest of noneo used for train and validation
         self.X_train_val_noneo = np.copy(self.X_noneo[self.test_noneo_images:])
         self.y_train_val_noneo = np.copy(self.y_noneo[self.test_noneo_images:])
-
-
+    
+    
         # test images used from neop
         self.X_test_neop = np.copy(self.X_neop[0:self.test_neop_images])
         self.y_test_neop = np.copy(self.y_neop[0:self.test_neop_images])
-
+    
         # rest of neop used for train and validation
         self.X_train_val_neop = np.copy(self.X_neop[self.test_neop_images:])
         self.y_train_val_neop = np.copy(self.y_neop[self.test_neop_images:])
-
+    
         # Test set
         self.X_test = np.concatenate((self.X_test_noneo, self.X_test_neop), axis=0)
         self.y_test = np.concatenate((self.y_test_noneo, self.y_test_neop), axis=0)
+            
 
 
 

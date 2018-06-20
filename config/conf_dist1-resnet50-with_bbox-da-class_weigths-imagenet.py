@@ -28,22 +28,23 @@ bbox_output_path       = "/home/willytell/Documentos/MCV/M9/TFM/ExperCNN/BBox"  
 
 
 # Model
-model_name = 'resnet50'
-load_pretrained = False
-weights_suffix = 'weights.hdf5'  # Pre-Trained weight file name
-show_model = False
+model_name                   = 'resnet50'
+show_model                   = False
+load_imageNet                = True            # Load Imagenet weights and normalize following imagenet procedure
+load_pretrained              = False
+weights_suffix               = 'weights.hdf5'  # Pre-Trained weight file name
 
 # Batch sizes
 batch_size_train = 8            # Batch size during training
 batch_size_valid = 3            # Batch size during validation
 batch_size_test  = 6            # Batch size during testing
 
-resize_image                  = None #(224, 224)       # Resize the image during training (Height, Width) or None
+resize_image                  = (224, 224)       # Resize the image during training (Height, Width) or None
 #resize_train                 = (224, 224)      # Resize the image during training (Height, Width) or None
 #resize_valid                 = (224, 224)      # Resize the image during validation
 #resize_test                  = (224, 224)      # Resize the image during testing
 
-crop_size_image               = (224, 224) #None
+crop_size_image               = None       # [(224, 224) | None]
 #crop_size_train              = None       # Crop size during training (Height, Width) or None
 #crop_size_valid              = None       # Crop size during validation
 #crop_size_test               = None       # Crop size during testing
@@ -59,7 +60,7 @@ batch_shuffle_test  = False     # Whether to shuffle the (mini) batch test data
 
 # Training parameters
 optimizer = 'adam'
-learning_rate = 0.001
+learning_rate = 0.00001
 n_epochs = 200
 
 # Normalization and Standardize
@@ -105,4 +106,4 @@ da_save_to_dir               = False      # Save the images for debuging
 
 
 
-model_output_directory = 'resnet50-from-scratch-bbox-crop-da-class_weigths'
+model_output_directory = 'resnet50-from-scratch-bbox-da-class_weights-imagenet'
