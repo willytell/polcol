@@ -363,6 +363,7 @@ if __name__ == '__main__':
 
                 class_weights = None #{0: 1.72289156627, 1:1.}
                 print('\n > class weights: ', class_weights)
+                print('\n')
 
                 history = model.fit_generator(generator=train_generator.generate(), validation_data=validation_generator.generate(), 
                                               validation_steps=(validation_generator.total_images // cf.batch_size_valid),
@@ -621,7 +622,15 @@ if __name__ == '__main__':
                 predictions = model.predict_generator(generator=predict_generator.generate(),
                                                       steps=(predict_generator.total_images // cf.batch_size_test))
 
-                print("predictions = ", predictions)
+                
+                steps = (predict_generator.total_images // cf.batch_size_test)
+                y_fnames = predict_generator.history_batch_fnames[0:steps * cf.batch_size_test]
+                print("\ny_fnames = ")
+                print(y_fnames)
+
+                print("\ny_pred = ") 
+                print(predictions)
+
                 #print ("np.argmax(predicitons) = ", np.argmax(predictions))
                 print("\n")
 
@@ -635,7 +644,6 @@ if __name__ == '__main__':
                 #print("len(predict_generator.history_batch_labels) = ", len(predict_generator.history_batch_labels))
                 #print("predict_generator.history_batch_labels = ", predict_generator.history_batch_labels)
 
-                steps = (predict_generator.total_images // cf.batch_size_test)
                 y_true = predict_generator.history_batch_labels[0:steps*cf.batch_size_test]
                 #y_true = predict_generator.history_batch_labels[0:len(predict_generator.history_batch_labels)-cf.batch_size_test]
                 #print("len(y_true) = ", len(y_true))

@@ -747,9 +747,6 @@ class Dataset_Generator(object):
                 #    continue
 
                 
-                self.history_batch_fnames = np.concatenate((self.history_batch_fnames, self.batch_fnames), axis=0)
-                self.history_batch_labels = np.concatenate((self.history_batch_labels, self.batch_labels), axis=0)
-
                 #if len(batch_fnames) != self.batch_size:
                 #    print("\n >>>>>>>> batch_fnames = ", batch_fnames)
                 #    print("\n >>>>>>>> batch_labels = ", batch_labels)
@@ -762,6 +759,11 @@ class Dataset_Generator(object):
 
                 if self.shuffle_batch:
                     shuffle(self.batch_fnames, self.batch_labels)
+
+                # Keep history of file names and labes
+                self.history_batch_fnames = np.concatenate((self.history_batch_fnames, self.batch_fnames), axis=0)
+                self.history_batch_labels = np.concatenate((self.history_batch_labels, self.batch_labels), axis=0)
+
 
                 # Create the batch_x and batch_y
                 for idx, image_name in enumerate(self.batch_fnames):
