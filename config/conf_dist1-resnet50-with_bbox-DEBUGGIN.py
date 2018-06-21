@@ -28,10 +28,13 @@ bbox_output_path       = "/home/willytell/Documentos/MCV/M9/TFM/ExperCNN/BBox"  
 
 
 # Model
-model_name = 'resnet50'
-load_pretrained = False
-weights_suffix = 'weights.hdf5'  # Pre-Trained weight file name
-show_model = False
+model_name                   = 'resnet50'
+freeze_layers_from           = None            # Freeze layers from 3 to this layer during training (Useful for finetunning) [None | 'base_model' | Layer_id]
+show_model                   = False
+load_imageNet                = True            # Load Imagenet weights and normalize following imagenet procedure
+load_pretrained              = False
+weights_suffix               = 'weights.hdf5'  # Pre-Trained weight file name
+
 
 # Batch sizes
 batch_size_train = 8            # Batch size during training
@@ -59,7 +62,7 @@ batch_shuffle_test  = False     # Whether to shuffle the (mini) batch test data
 
 # Training parameters
 optimizer = 'adam'
-learning_rate = 0.0001
+learning_rate = 0.001
 n_epochs = 200
 
 # Normalization and Standardize
@@ -86,7 +89,7 @@ checkpoint_verbose           = 1               # Verbosity of the checkpoint
 
 # Data augmentation for training
 apply_augmentation           = True 
-n_augmentation               = 1
+n_augmentation               = 3
 
 da_rotation_range            = 45         # Rnd rotation degrees 0-180
 da_width_shift_range         = 0.01       # Rnd horizontal shift
@@ -94,13 +97,13 @@ da_height_shift_range        = 0.01       # Rnd vertical shift
 da_shear_range               = 0.02       # Shear in radians
 da_zoom_range                = [1, 1]     # Zoom
 da_channel_shift_range       = 0.         # Channecf.l shifts
-da_fill_mode                 = 'nearest'  # Fill mode ['constant' | 'nearest']
+da_fill_mode                 = 'constant' # Fill mode ['constant' | 'nearest']
 da_cval                      = 0.         # Void image value
 da_horizontal_flip           = True       # Rnd horizontal flip
 da_vertical_flip             = True       # Rnd vertical flip
-da_spline_warp               = True       # Enable elastic deformation
+da_spline_warp               = False      # Enable elastic deformation
 da_warp_sigma                = 0.01       # Elastic deformation sigma
-da_warp_grid_size            = 1          # Elastic deformation gridSize
+da_warp_grid_size            = 3          # Elastic deformation gridSize
 da_save_to_dir               = False      # Save the images for debuging
 
 

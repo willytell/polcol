@@ -29,6 +29,7 @@ bbox_output_path       = "/home/willytell/Documentos/MCV/M9/TFM/ExperCNN/BBox"  
 
 # Model
 model_name                   = 'resnet50'
+freeze_layers_from           = None            # Freeze layers from 3 to this layer during training (Useful for finetunning) [None | 'base_model' | Layer_id]
 show_model                   = False
 load_imageNet                = True            # Load Imagenet weights and normalize following imagenet procedure
 load_pretrained              = False
