@@ -174,11 +174,10 @@ class Dataset_Generator(object):
                 print('   ===> NEW amount Neop images: ' + str(self.noneo_size))
 
         if self.mode == 'test' or self.mode == 'validation':
-            self.X_test_global = np.concatenate((self.X_noneo, self.X_neop), axis=0)
-            self.y_test_global = np.concatenate((self.y_noneo_class, self.y_neop_class), axis=0)
+            self.X_global = np.concatenate((self.X_noneo, self.X_neop), axis=0)
+            self.y_global = np.concatenate((self.y_noneo_class, self.y_neop_class), axis=0)
             if self.shuffle_dataset:
-                shuffle(self.X_test_global, self.y_test_global)
-
+                shuffle(self.X_global, self.y_global)
 
         if self.mode == 'train':           
             if self.shuffle_dataset:
@@ -186,8 +185,8 @@ class Dataset_Generator(object):
                 shuffle(self.X_neop, self.y_neop_class)
 
             # Keep this initialization inside of this if ;)
-            self.X_test_global = np.array([])
-            self.y_test_global = np.array([])
+            self.X_global = np.array([])
+            self.y_global = np.array([])
 
             for nFiles in range(self.total_images // self.batch_size):
                 #print("nFiles: {}".format(nFiles))
@@ -214,14 +213,14 @@ class Dataset_Generator(object):
                 y_tmp = np.concatenate((y_noneo_labels, y_neop_labels), axis=0)
 
 
-                self.X_test_global = np.concatenate((self.X_test_global, X_tmp), axis=0)
-                self.y_test_global = np.concatenate((self.y_test_global, y_tmp), axis=0)
+                self.X_global = np.concatenate((self.X_global, X_tmp), axis=0)
+                self.y_global = np.concatenate((self.y_global, y_tmp), axis=0)
 
                 #print("\n")
-                #print("len(self.X_test_global): {}".format(len(self.X_test_global)))
-                #print("self.X_test_global: {}".format(self.X_test_global))
-                #print("len(self.y_test_global): {}".format(len(self.y_test_global)))
-                #print("self.y_test_global: {}".format(self.y_test_global))
+                #print("len(self.X_global): {}".format(len(self.X_global)))
+                #print("self.X_global: {}".format(self.X_global))
+                #print("len(self.y_global): {}".format(len(self.y_global)))
+                #print("self.y_global: {}".format(self.y_global))
             # DO NOT SHUFFLE, BECAUSE IMAGES ARE READY TO BE TAKEN BY THE BATCH_SIZE
 
 
@@ -229,6 +228,7 @@ class Dataset_Generator(object):
             self.da_stats = []  # it will store information to be used by data augmentation
             for _ in range(len(self.X_neop)):
                 self.da_stats.append([])
+
 
 
     def preprocess(self, cf, X_all):
@@ -534,50 +534,53 @@ class Dataset_Generator(object):
         #                   interpolator=sitk.sitkLinear,
         #                   fill_mode=self.fill_mode, fill_constant=self.cval)
 
+
+        if self.crop_size is not None:
+            x = self.crop(x, 'center')
         # Crop
         # TODO: tf compatible???
-        crop = list(self.crop_size) if self.crop_size else None
-        if crop:
-            #print ('X before: ' + str(x.shape))
-            # print ('Y before: ' + str(y.shape))
-            #print ('Crop_size: ' + str(self.crop_size))
-            h, w = x.shape[img_row_index], x.shape[img_col_index]
+        #crop = list(self.crop_size) if self.crop_size else None
+        #if crop:
+        #    #print ('X before: ' + str(x.shape))
+        #    # print ('Y before: ' + str(y.shape))
+        #    #print ('Crop_size: ' + str(self.crop_size))
+        #    h, w = x.shape[img_row_index], x.shape[img_col_index]
 
-            # Padd image if it is smaller than the crop size
-            pad_h1, pad_h2, pad_w1, pad_w2 = 0, 0, 0, 0
-            if h < crop[0]:
-                total_pad = crop[0] - h
-                pad_h1 = math.ceil(total_pad / 2)
-                pad_h2 = total_pad - pad_h1
-            if w < crop[1]:
-                total_pad = crop[1] - w
-                pad_w1 = math.ceil(total_pad / 2)
-                pad_w2 = total_pad - pad_w1
-            if h < crop[0] or w < crop[1]:
-                #print ("pad_h1: {}".format(pad_h1))
-                #print ("pad_h2: {}".format(pad_h2))
-                #print ("pad_w1: {}".format(pad_w1))
-                #print ("pad_w2: {}".format(pad_w2))
-                x = np.lib.pad(x, ((pad_h1, pad_h2), (pad_w1, pad_w2), (0, 0)), 'constant')
+        #    # Padd image if it is smaller than the crop size
+        #    pad_h1, pad_h2, pad_w1, pad_w2 = 0, 0, 0, 0
+        #    if h < crop[0]:
+        #        total_pad = crop[0] - h
+        #        pad_h1 = math.ceil(total_pad / 2)
+        #        pad_h2 = total_pad - pad_h1
+        #    if w < crop[1]:
+        #        total_pad = crop[1] - w
+        #        pad_w1 = math.ceil(total_pad / 2)
+        #        pad_w2 = total_pad - pad_w1
+        #    if h < crop[0] or w < crop[1]:
+        #        #print ("pad_h1: {}".format(pad_h1))
+        #        #print ("pad_h2: {}".format(pad_h2))
+        #        #print ("pad_w1: {}".format(pad_w1))
+        #        #print ("pad_w2: {}".format(pad_w2))
+        #        x = np.lib.pad(x, ((pad_h1, pad_h2), (pad_w1, pad_w2), (0, 0)), 'constant')
 
-                h, w = x.shape[img_row_index], x.shape[img_col_index]
-                #print ('=====>>>> New size X: ' + str(x.shape))
-                # print ('New size Y: ' + str(y.shape))
-                # exit()
+        #        h, w = x.shape[img_row_index], x.shape[img_col_index]
+        #        #print ('=====>>>> New size X: ' + str(x.shape))
+        #        # print ('New size Y: ' + str(y.shape))
+        #        # exit()
 
-            if crop[0] < h:
-                top = np.random.randint(h - crop[0])
-            else:
-                #print('Data augmentation: Crop height >= image size')
-                top, crop[0] = 0, h
-            if crop[1] < w:
-                left = np.random.randint(w - crop[1])
-            else:
-                # print('Data augmentation: Crop width >= image size')
-                left, crop[1] = 0, w
+        #    if crop[0] < h:
+        #        top = np.random.randint(h - crop[0])
+        #    else:
+        #        #print('Data augmentation: Crop height >= image size')
+        #        top, crop[0] = 0, h
+        #    if crop[1] < w:
+        #        left = np.random.randint(w - crop[1])
+        #    else:
+        #        # print('Data augmentation: Crop width >= image size')
+        #        left, crop[1] = 0, w
 
-            # self.dim_ordering = 'tf'
-            x = x[..., top:top + crop[0], left:left + crop[1], :]
+        #    # self.dim_ordering = 'tf'
+        #    x = x[..., top:top + crop[0], left:left + crop[1], :]
 
             #print ('>>>>>>>>>>>>>>X after: ' + str(x.shape))
             # print ('Y after: ' + str(y.shape))
@@ -676,7 +679,7 @@ class Dataset_Generator(object):
 
             return self.random_transform(x)
 
-            #if self.y_test_global[idx] == 0:
+            #if self.y_global[idx] == 0:
             #    return self.random_transform(x)
             #else:
             #    return x
@@ -712,6 +715,7 @@ class Dataset_Generator(object):
 
         while True:
 
+
             for nFiles in range(self.total_images // self.batch_size):
 
                 #print("\n")
@@ -724,10 +728,10 @@ class Dataset_Generator(object):
                 #    print("\n")
     
                 #    print("self.total_images // self.batch_size : {}".format(self.total_images // self.batch_size))
-                #    print("len(self.X_test_global): {}".format(len(self.X_test_global)))
+                #    print("len(self.X_global): {}".format(len(self.X_global)))
 
-                self.batch_fnames = self.X_test_global[nFiles * self.batch_size:(nFiles + 1) * self.batch_size]
-                self.batch_labels = self.y_test_global[nFiles * self.batch_size:(nFiles + 1) * self.batch_size]
+                self.batch_fnames = self.X_global[nFiles * self.batch_size:(nFiles + 1) * self.batch_size]
+                self.batch_labels = self.y_global[nFiles * self.batch_size:(nFiles + 1) * self.batch_size]
 
                 #if self.mode == 'train' or self.mode =='validation':
                 #    print("\n")
@@ -760,11 +764,8 @@ class Dataset_Generator(object):
                 if self.shuffle_batch:
                     shuffle(self.batch_fnames, self.batch_labels)
 
-                # Keep history of file names and labes
-                self.history_batch_fnames = np.concatenate((self.history_batch_fnames, self.batch_fnames), axis=0)
-                self.history_batch_labels = np.concatenate((self.history_batch_labels, self.batch_labels), axis=0)
-
-
+                fnames_list=[]
+                
                 # Create the batch_x and batch_y
                 for idx, image_name in enumerate(self.batch_fnames):
                     #print("\n Reading images")
@@ -778,6 +779,7 @@ class Dataset_Generator(object):
                     #sys.stdout.flush()
 
                     image = load_img(os.path.join(self.dataset_images_path, image_name), resize=self.resize_image)
+                    fnames_list.append(image_name)
                     image = np.asarray(image, dtype='float32')   # image = image.astype('float32')
                     image = self.standardize(image)
                     if self.mode == 'train':
@@ -797,5 +799,9 @@ class Dataset_Generator(object):
                 
 
                 #print("\n >> lab_batch = ", np.array(lab_batch)) 
-                #print("MODE: {}".format(self.mode))
+                #if self.mode == 'validation':
+                #    sys.stdout.flush()
+                #    print(fnames_list) 
+                #    sys.stdout.flush()
                 yield (np.array(img_batch), np.array(lab_batch))
+

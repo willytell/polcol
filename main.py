@@ -95,12 +95,14 @@ class Metrics(keras.callbacks.Callback):
         #self.losses.append(logs.get('loss'))
         # predict_generator(self, generator, steps=None, max_queue_size=10, workers=1, use_multiprocessing=False, verbose=0)
         y_pred = self.model.predict_generator(generator=self.validation_generator.generate(),
-                                              steps=(self.validation_generator.total_images // cf.batch_size_valid))
+                                              steps=(self.validation_generator.total_images // cf.batch_size_valid),
+                                              max_queue_size=1, workers=1)
 
         rounded_pred = np.argmax(y_pred, axis=1)
         steps = (self.validation_generator.total_images // cf.batch_size_valid)
-        y_true = self.validation_generator.history_batch_labels[0:steps * cf.batch_size_valid]
-        y_fnames = self.validation_generator.history_batch_fnames[0:steps * cf.batch_size_valid]
+        y_fnames = self.validation_generator.X_global[0:steps * cf.batch_size_valid]
+        y_true = self.validation_generator.y_global[0:steps * cf.batch_size_valid]
+
         print("\ny_fnames = ")
         print(y_fnames)
 
@@ -369,6 +371,7 @@ if __name__ == '__main__':
                 history = model.fit_generator(generator=train_generator.generate(), validation_data=validation_generator.generate(), 
                                               validation_steps=(validation_generator.total_images // cf.batch_size_valid),
                                               class_weight=class_weights,
+                                              max_queue_size=1, workers=1,
                                               steps_per_epoch=((train_generator.total_images*N) // cf.batch_size_train), 
                                               epochs=cf.n_epochs, verbose=1, callbacks=cb)
 

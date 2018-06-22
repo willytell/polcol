@@ -62,7 +62,7 @@ batch_shuffle_test  = False     # Whether to shuffle the (mini) batch test data
 
 # Training parameters
 optimizer = 'adam'
-learning_rate = 0.001
+learning_rate = 0.01
 n_epochs = 200
 
 # Normalization and Standardize
@@ -89,7 +89,7 @@ checkpoint_verbose           = 1               # Verbosity of the checkpoint
 
 # Data augmentation for training
 apply_augmentation           = True 
-n_augmentation               = 3
+n_augmentation               = 55
 
 da_rotation_range            = 45         # Rnd rotation degrees 0-180
 da_width_shift_range         = 0.01       # Rnd horizontal shift

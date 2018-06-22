@@ -4,11 +4,11 @@ echo "begining..."
 
 echo "====>"
 
-CUDA_VISIBLE_DEVICES=0 python3 main.py -c config/conf_dist2-resnet50-with_bbox-imagenet-da.py -a train &>logs/dist2-resnet50-with_bbox-imagenet-da-train
-CUDA_VISIBLE_DEVICES=0 python3 main.py -c config/conf_dist2-resnet50-with_bbox-imagenet-da.py -a test &>logs/dist2-resnet50-with_bbox-imagenet-da-test
+#CUDA_VISIBLE_DEVICES=0 python3 main.py -c config/conf_dist2-resnet50-with_bbox-imagenet-da.py -a train &>logs/dist2-resnet50-with_bbox-imagenet-da-train
+#CUDA_VISIBLE_DEVICES=0 python3 main.py -c config/conf_dist2-resnet50-with_bbox-imagenet-da.py -a test &>logs/dist2-resnet50-with_bbox-imagenet-da-test
 
-#CUDA_VISIBLE_DEVICES=0 python3 main.py -c config/conf_dist3-resnet50-with_bbox-imagenet-da.py -a train &>logs/dist3-resnet50-with_bbox-imagenet-da-train
-#CUDA_VISIBLE_DEVICES=0 python3 main.py -c config/conf_dist3-resnet50-with_bbox-imagenet-da.py -a test &>logs/dist3-resnet50-with_bbox-imagenet-da-test
+CUDA_VISIBLE_DEVICES=0 python3 main.py -c config/conf_dist3-resnet50-with_bbox-imagenet-da.py -a train &>logs/dist3-resnet50-with_bbox-imagenet-da-train
+CUDA_VISIBLE_DEVICES=0 python3 main.py -c config/conf_dist3-resnet50-with_bbox-imagenet-da.py -a test &>logs/dist3-resnet50-with_bbox-imagenet-da-test
 
 ##############
 
