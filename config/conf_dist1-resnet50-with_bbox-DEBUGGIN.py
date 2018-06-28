@@ -41,12 +41,12 @@ batch_size_train = 8            # Batch size during training
 batch_size_valid = 3            # Batch size during validation
 batch_size_test  = 6            # Batch size during testing
 
-resize_image                  = None #(224, 224)       # Resize the image during training (Height, Width) or None
+resize_image                  = (224, 224)       # Resize the image during training (Height, Width) or None
 #resize_train                 = (224, 224)      # Resize the image during training (Height, Width) or None
 #resize_valid                 = (224, 224)      # Resize the image during validation
 #resize_test                  = (224, 224)      # Resize the image during testing
 
-crop_size_image               = (224, 224) #None
+crop_size_image               = None       # [(224, 224) | None]
 #crop_size_train              = None       # Crop size during training (Height, Width) or None
 #crop_size_valid              = None       # Crop size during validation
 #crop_size_test               = None       # Crop size during testing
@@ -56,13 +56,13 @@ crop_size_image               = (224, 224) #None
 shuffle_train       = False     # Whether to shuffle the training data
 shuffle_valid       = False     # Whether to shuffle the validation data
 shuffle_test        = False     # Whether to shuffle the testing data
-batch_shuffle_train = False     # Whether to shuffle the (mini) batch training data 
+batch_shuffle_train = True      # Whether to shuffle the (mini) batch training data 
 batch_shuffle_valid = False     # Whether to shuffle the (mini) batch valid data 
 batch_shuffle_test  = False     # Whether to shuffle the (mini) batch test data 
 
 # Training parameters
 optimizer = 'adam'
-learning_rate = 0.01
+learning_rate = 0.001
 n_epochs = 200
 
 # Normalization and Standardize
@@ -88,7 +88,7 @@ checkpoint_save_weights_only = True            # Save only weights or also model
 checkpoint_verbose           = 1               # Verbosity of the checkpoint
 
 # Data augmentation for training
-apply_augmentation           = True 
+apply_augmentation           = False
 n_augmentation               = 55
 
 da_rotation_range            = 45         # Rnd rotation degrees 0-180

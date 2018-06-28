@@ -4,7 +4,7 @@
 experiment_name = "exp1-whole_image"
 experiments_path= "/home/willytell/Experiments"
 experiment_prefix = "experiment"
-num_repetition_experiment = 10      # Repeat n times the experiment
+num_repetition_experiment = 3      # Repeat n times the experiment
 
 # Cross validation
 num_images_for_test = 24
@@ -29,22 +29,24 @@ bbox_output_path       = "/home/willytell/Documentos/MCV/M9/TFM/ExperCNN/BBox"  
 
 # Model
 model_name                   = 'resnet50'
+freeze_layers_from           = None            # Freeze layers from 3 to this layer during training (Useful for finetunning) [None | 'base_model' | Layer_id]
 show_model                   = False
 load_imageNet                = True            # Load Imagenet weights and normalize following imagenet procedure
 load_pretrained              = False
 weights_suffix               = 'weights.hdf5'  # Pre-Trained weight file name
+
 
 # Batch sizes
 batch_size_train = 8            # Batch size during training
 batch_size_valid = 3            # Batch size during validation
 batch_size_test  = 6            # Batch size during testing
 
-resize_image                  = (224, 224)       # Resize the image during training (Height, Width) or None
+resize_image                  = None #(224, 224)       # Resize the image during training (Height, Width) or None
 #resize_train                 = (224, 224)      # Resize the image during training (Height, Width) or None
 #resize_valid                 = (224, 224)      # Resize the image during validation
 #resize_test                  = (224, 224)      # Resize the image during testing
 
-crop_size_image               = None       # [(224, 224) | None]
+crop_size_image               = (224, 224) #None
 #crop_size_train              = None       # Crop size during training (Height, Width) or None
 #crop_size_valid              = None       # Crop size during validation
 #crop_size_test               = None       # Crop size during testing
@@ -54,7 +56,7 @@ crop_size_image               = None       # [(224, 224) | None]
 shuffle_train       = False     # Whether to shuffle the training data
 shuffle_valid       = False     # Whether to shuffle the validation data
 shuffle_test        = False     # Whether to shuffle the testing data
-batch_shuffle_train = True      # Whether to shuffle the (mini) batch training data 
+batch_shuffle_train = False     # Whether to shuffle the (mini) batch training data 
 batch_shuffle_valid = False     # Whether to shuffle the (mini) batch valid data 
 batch_shuffle_test  = False     # Whether to shuffle the (mini) batch test data 
 
@@ -87,9 +89,9 @@ checkpoint_verbose           = 1               # Verbosity of the checkpoint
 
 # Data augmentation for training
 apply_augmentation           = True 
-n_augmentation               = 10
+n_augmentation               = 55
 
-da_rotation_range            = 30         # Rnd rotation degrees 0-180
+da_rotation_range            = 45         # Rnd rotation degrees 0-180
 da_width_shift_range         = 0.01       # Rnd horizontal shift
 da_height_shift_range        = 0.01       # Rnd vertical shift
 da_shear_range               = 0.02       # Shear in radians
@@ -99,11 +101,11 @@ da_fill_mode                 = 'constant' # Fill mode ['constant' | 'nearest']
 da_cval                      = 0.         # Void image value
 da_horizontal_flip           = True       # Rnd horizontal flip
 da_vertical_flip             = True       # Rnd vertical flip
-da_spline_warp               = True       # Enable elastic deformation
+da_spline_warp               = False      # Enable elastic deformation
 da_warp_sigma                = 0.01       # Elastic deformation sigma
-da_warp_grid_size            = 1          # Elastic deformation gridSize
+da_warp_grid_size            = 3          # Elastic deformation gridSize
 da_save_to_dir               = False      # Save the images for debuging
 
 
 
-model_output_directory = 'resnet50-from-scratch-bbox-imagenet-da'
+model_output_directory = 'resnet50-from-scratch-bbox-images-DEBUGGING'

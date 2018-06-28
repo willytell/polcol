@@ -103,11 +103,18 @@ class Metrics(keras.callbacks.Callback):
         y_fnames = self.validation_generator.X_global[0:steps * cf.batch_size_valid]
         y_true = self.validation_generator.y_global[0:steps * cf.batch_size_valid]
 
-        print("\ny_fnames = ")
-        print(y_fnames)
+        print("> y_fnames, y_true")
+        for i in range(len(y_fnames)):
+            print("{} {}".format(y_fnames[i], y_true[i]))
 
-        print("\ny_pred = ")
-        print(y_pred)
+        print("> y_pred[i,0], y_pred[i,1], abs(y_pred[i,0] - y_pred[i,1]), rounded_pred[i], 1 predicted ok or 0 other case.")
+        for i in range(len(y_pred)):
+            if rounded_pred[i] == y_true[i]:
+                print("{} {} {} {} {}".format(y_pred[i,0], y_pred[i,1], abs(y_pred[i,0] - y_pred[i,1]), rounded_pred[i], 1))
+            else:
+                print("{} {} {} {} {}".format(y_pred[i,0], y_pred[i,1], abs(y_pred[i,0] - y_pred[i,1]), rounded_pred[i], 0))
+
+
         sys.stdout.flush()
 
 
@@ -174,10 +181,10 @@ class Metrics(keras.callbacks.Callback):
         #print("\n")
 
 
-        if max(self.f2_list) < f2 and max(self.acc_list) < acc:
-            if cf.checkpoint_enabled and 6 < (epoch+1):
-                print('\n > On-epoch-end: Saving the model, in epoch {}, to {} '.format(epoch+1, self.weights_path))
-                self.model.save_weights(self.weights_path)
+        #if max(self.f2_list) < f2 and max(self.acc_list) < acc:
+        #    if cf.checkpoint_enabled and 6 < (epoch+1):
+        #        print('\n > On-epoch-end: Saving the model, in epoch {}, to {} '.format(epoch+1, self.weights_path))
+        #        self.model.save_weights(self.weights_path)
         
         if 6 < (epoch+1):   
             # append the current values
@@ -623,36 +630,46 @@ if __name__ == '__main__':
                 print("\n")
 
                 #predict_generator(self, generator, steps=None, max_queue_size=10, workers=1, use_multiprocessing=False, verbose=0)
-                predictions = model.predict_generator(generator=predict_generator.generate(),
+                y_pred = model.predict_generator(generator=predict_generator.generate(),
                                                       steps=(predict_generator.total_images // cf.batch_size_test))
 
-                
+                rounded_pred = np.argmax(y_pred, axis=1)
                 steps = (predict_generator.total_images // cf.batch_size_test)
                 y_fnames = predict_generator.X_global[0:steps * cf.batch_size_test]
-                print("\ny_fnames = ")
-                print(y_fnames)
+                #print("\ny_fnames = ")
+                #print(y_fnames)
 
-                print("\ny_pred = ") 
-                print(predictions)
+                #print("\ny_pred = ") 
+                #print(y_pred)
 
-                #print ("np.argmax(predicitons) = ", np.argmax(predictions))
-                print("\n")
+                #print ("np.argmax(y_pred) = ", np.argmax(y_pred))
+                #print("\n")
 
-                rounded_pred = np.array([], dtype=np.int64)
-                for p in predictions:
-                    rounded_pred=np.append(rounded_pred, np.argmax(p))
+                #rounded_pred = np.array([], dtype=np.int64)
+                #for p in y_pred:
+                #    rounded_pred=np.append(rounded_pred, np.argmax(p))
 
-                print ("rounded_pred_model = ", rounded_pred)
+                print ("rounded_pred = ", rounded_pred)
 
-
-                #print("len(predict_generator.history_batch_labels) = ", len(predict_generator.history_batch_labels))
-                #print("predict_generator.history_batch_labels = ", predict_generator.history_batch_labels)
 
                 y_true = predict_generator.y_global[0:steps*cf.batch_size_test]
-                #y_true = predict_generator.history_batch_labels[0:len(predict_generator.history_batch_labels)-cf.batch_size_test]
                 #print("len(y_true) = ", len(y_true))
-                print("            y_true = ", y_true)
+                print("       y_true = ", y_true)
                 print("\n")
+
+                print("> y_fnames, y_true")
+                for i in range(len(y_fnames)):
+                    print("{} {}".format(y_fnames[i], y_true[i]))
+        
+                print("\n> y_pred[i,0], y_pred[i,1], abs(y_pred[i,0] - y_pred[i,1]), rounded_pred[i], 1 predicted ok or 0 other case.")
+                for i in range(len(y_pred)):
+                    if rounded_pred[i] == y_true[i]:
+                        print("{} {} {} {} {}".format(y_pred[i,0], y_pred[i,1], abs(y_pred[i,0] - y_pred[i,1]), rounded_pred[i], 1)) 
+                    else:
+                        print("{} {} {} {} {}".format(y_pred[i,0], y_pred[i,1], abs(y_pred[i,0] - y_pred[i,1]), rounded_pred[i], 0)) 
+        
+        
+                sys.stdout.flush()
 
 
                 ######################################################################3 
