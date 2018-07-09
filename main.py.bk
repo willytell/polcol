@@ -71,9 +71,7 @@ class Metrics(keras.callbacks.Callback):
                                                  batch_size=cf.batch_size_valid,
                                                  resize_image=cf.resize_image,
                                                  shuffle_dataset=cf.shuffle_valid,
-                                                 seed=cf.seed_valid,
                                                  shuffle_batch=cf.batch_shuffle_valid,
-                                                 seed_batch=cf.seed_batch_valid,
                                                  apply_augmentation=False,
                                                  sampling_score=None,
                                                  data_path=data_path,
@@ -101,7 +99,7 @@ class Metrics(keras.callbacks.Callback):
         #    self.t_gen.mix()
 
         # predict_generator(self, generator, steps=None, max_queue_size=10, workers=1, use_multiprocessing=False, verbose=0)
-        y_pred = self.model.predict_generator(generator=self.validation_generator,
+        y_pred = self.model.predict_generator(generator=self.validation_generator.generate(),
                                               steps=(self.validation_generator.total_images // cf.batch_size_valid),
                                               max_queue_size=1, workers=1)
 
@@ -362,9 +360,7 @@ if __name__ == '__main__':
                                                     batch_size=cf.batch_size_train,
                                                     resize_image=cf.resize_image,
                                                     shuffle_dataset=cf.shuffle_train,
-                                                    seed=cf.seed_train,
                                                     shuffle_batch=cf.batch_shuffle_train,
-                                                    seed_batch=cf.seed_batch_train,
                                                     apply_augmentation=cf.apply_augmentation,
                                                     sampling_score=None,
                                                     data_path=data_path,
@@ -380,9 +376,7 @@ if __name__ == '__main__':
                                                          batch_size=cf.batch_size_valid,
                                                          resize_image=cf.resize_image,
                                                          shuffle_dataset=cf.shuffle_valid,
-                                                         seed=cf.seed_valid,
                                                          shuffle_batch=cf.batch_shuffle_valid,
-                                                         seed_batch=cf.seed_batch_valid,
                                                          apply_augmentation=False,
                                                          sampling_score=None,
                                                          data_path=data_path,
@@ -399,10 +393,10 @@ if __name__ == '__main__':
                 print('\n > class weights: ', class_weights)
                 print('\n')
 
-                history = model.fit_generator(generator=train_generator, validation_data=validation_generator, 
+                history = model.fit_generator(generator=train_generator.generate(), validation_data=validation_generator.generate(), 
                                               validation_steps=(validation_generator.total_images // cf.batch_size_valid),
                                               class_weight=class_weights,
-                                              max_queue_size=5, use_multiprocessing=True, workers=2,
+                                              max_queue_size=1, workers=1,
                                               steps_per_epoch=((train_generator.total_images*N) // cf.batch_size_train), 
                                               epochs=cf.n_epochs, verbose=1, callbacks=cb)
 
@@ -435,7 +429,7 @@ if __name__ == '__main__':
                 #validation_start_time = time.time()
                 #print('\n > Validating the model... using validatin set')
                 ## evaluate_generator(self, generator, steps=None, max_queue_size=10, workers=1, use_multiprocessing=False, verbose=0)
-                #score = model.evaluate_generator(generator=validation_generator,
+                #score = model.evaluate_generator(generator=validation_generator.generate(),
                 #                                 steps=(validation_generator.total_images // cf.batch_size_test))  # , \
                 ## max_queue_size=10, \
                 ## workers=1, \
@@ -454,7 +448,7 @@ if __name__ == '__main__':
 
 
                 ## predict_generator(self, generator, steps=None, max_queue_size=10, workers=1, use_multiprocessing=False, verbose=0)
-                #predictions = model.predict_generator(generator=validation_generator,
+                #predictions = model.predict_generator(generator=validation_generator.generate(),
                 #                                      steps=(validation_generator.total_images // cf.batch_size_valid))
 
                 #print("predictions = ", predictions)
@@ -575,9 +569,7 @@ if __name__ == '__main__':
                                                    batch_size=cf.batch_size_test,
                                                    resize_image=cf.resize_image,
                                                    shuffle_dataset=cf.shuffle_test,
-                                                   seed=cf.seed_test,
                                                    shuffle_batch=cf.batch_shuffle_test,
-                                                   seed_batch=cf.seed_batch_test,
                                                    apply_augmentation=False,
                                                    sampling_score=None,
                                                    data_path=data_path,
@@ -589,9 +581,7 @@ if __name__ == '__main__':
                                                    batch_size=cf.batch_size_test,
                                                    resize_image=cf.resize_image,
                                                    shuffle_dataset=cf.shuffle_test,
-                                                   seed=cf.seed_test,
                                                    shuffle_batch=cf.batch_shuffle_test,
-                                                   seed_batch=cf.seed_batch_test,
                                                    apply_augmentation=False,
                                                    sampling_score=None,
                                                    data_path=data_path,
@@ -631,7 +621,7 @@ if __name__ == '__main__':
                 # validation_start_time = time.time()
                 # print('\n > Validating the model... using validatin set')
                 # # evaluate_generator(self, generator, steps=None, max_queue_size=10, workers=1, use_multiprocessing=False, verbose=0)
-                # score = model.evaluate_generator(generator=validation_generator,
+                # score = model.evaluate_generator(generator=validation_generator.generate(),
                 #                                  steps=(validation_generator.total_images // cf.batch_size_test))  # , \
                 # # max_queue_size=10, \
                 # # workers=1, \
@@ -651,7 +641,7 @@ if __name__ == '__main__':
                 test_start_time = time.time()
                 print('\n > Testing the model...')
                 # evaluate_generator(self, generator, steps=None, max_queue_size=10, workers=1, use_multiprocessing=False, verbose=0)
-                score = model.evaluate_generator(generator=test_generator,
+                score = model.evaluate_generator(generator=test_generator.generate(),
                                                  steps=(test_generator.total_images // cf.batch_size_test)) #, \
                                          #max_queue_size=10, \
                                          #workers=1, \
@@ -661,13 +651,13 @@ if __name__ == '__main__':
                 SPF = test_elapsed_time/test_generator.total_images
                 print("   Testing time: {:.11f}. FPS: {:.11f}. Seconds per Frame: {:.11f}".format(test_elapsed_time, FPS, SPF))
                 print("   Test metrics:")
-                print("      acc: {:.6f} ".format(score[1]))
+                print("      acc: {:.6f}, ".format(score[1]))
                 print("      loss: {:.12f}".format(score[0]))
                 #print("   Loss: ", score[0], "Accuracy: ", score[1])
                 print("\n")
 
                 #predict_generator(self, generator, steps=None, max_queue_size=10, workers=1, use_multiprocessing=False, verbose=0)
-                y_pred = model.predict_generator(generator=predict_generator,
+                y_pred = model.predict_generator(generator=predict_generator.generate(),
                                                       steps=(predict_generator.total_images // cf.batch_size_test))
 
                 rounded_pred = np.argmax(y_pred, axis=1)
@@ -791,7 +781,7 @@ if __name__ == '__main__':
                 ##plot_confusion_matrix(cm, cm_plot_labels, fname + 'cmatrix_normalized_testing.jpg', normalize=True, title='Confusion Matrix')
                 #plot_confusion_matrix(cm, cm_plot_labels, fname=None, normalize=True, title='Testing Confusion Matrix')
 
-                ##rounded_predictions = model.predict_classes(classes_generator, 
+                ##rounded_predictions = model.predict_classes(classes_generator.generate(), 
                 ##                                            batch_size=(predict_generator.total_images// cf.batch_size_test), verbose=0)
 
                 ##print ("rounded_predictions = ", rounded_predictions)

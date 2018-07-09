@@ -42,14 +42,23 @@ class Callbacks_Factory():
                                    mode=cf.checkpoint_mode,
                                    save_best_only=cf.checkpoint_save_best_only,
                                    save_weights_only=cf.checkpoint_save_weights_only)]
-        if True:
+
+        if cf.reduceLROnPlateau_enabled:
             print('   Model ReduceLROnPlateau')
-            cb += [ReduceLROnPlateau(monitor='val_loss', factor=0.8, patience=10, verbose=1, 
-                                                      mode='auto', epsilon=0.0001, cooldown=5, min_lr=0.00001)] 
+            cb += [ReduceLROnPlateau(monitor=cf.reduceLROnPlateau_monitor, 
+                                     factor=cf.reduceLROnPlateau_factor, 
+                                     patience=cf.reduceLROnPlateau_patience, 
+                                     verbose=cf.reduceLROnPlateau_verbose,
+                                     mode=cf.reduceLROnPlateau_mode, 
+                                     epsilon=cf.reduceLROnPlateau_epsilon, 
+                                     cooldown=cf.reduceLROnPlateau_cooldown, 
+                                     min_lr=cf.reduceLROnPlateau_min_lr)] 
 
-
-        if True:
+        if cf.earlyStopping_enabled:
             print('   Model EarlyStopping')
-            cb += [EarlyStopping(monitor="val_loss", mode="min", patience=20, verbose=1)] 
+            cb += [EarlyStopping(monitor=cf.earlyStopping_monitor, 
+                                 mode=cf.earlyStopping_mode, 
+                                 patience=cf.earlyStopping_patience, 
+                                 verbose=cf.earlyStopping_verbose)] 
         # Output the list of callbacks
         return cb

@@ -7,10 +7,9 @@ import glob
 import os
 import math
 import sys
-import keras
 
 from keras.utils import to_categorical
-from random import randint
+from random import shuffle, randint
 from scipy.misc import imread
 import skimage.transform
 from utils import compute_mean_std, load_img
@@ -35,17 +34,15 @@ import SimpleITK as sitk
 #from tools.save_images import save_img2
 ###################
 
-class Dataset_Generator(keras.utils.Sequence):
-    def __init__(self, cf, dataset_images_path, n_classes=2, batch_size=5, resize_image=(224, 224), shuffle_dataset=False, seed=1925, 
-                 shuffle_batch=False, seed_batch=55, apply_augmentation=False, sampling_score=None, data_path='data', data_path2=None, mode='train'):
+class Dataset_Generator(object):
+    def __init__(self, cf, dataset_images_path, n_classes=2, batch_size=5, resize_image=(224, 224), shuffle_dataset=False, 
+                 shuffle_batch=False, apply_augmentation=False, sampling_score=None, data_path='data', data_path2=None, mode='train'):
 
         self.dataset_images_path = dataset_images_path
         self.batch_size = batch_size
         self.n_classes = n_classes
         self.shuffle_dataset = shuffle_dataset
-        self.seed = seed
         self.shuffle_batch = shuffle_batch
-        self.seed_batch = seed_batch
         self.resize_image = resize_image
         self.rescale = cf.norm_rescale
         self.featurewise_center = cf.norm_featurewise_center
@@ -176,10 +173,8 @@ class Dataset_Generator(keras.utils.Sequence):
                 self.neop_size = len(self.X_neop)
                 print('   ===> NEW amount Neop images: ' + str(self.noneo_size))
 
-        if self.mode == 'train':
-            self.make_train_set()
 
-        self.on_epoch_end()
+        self.mix()
 
         if self.mode == 'train':
             self.da_stats = []  # it will store information to be used by data augmentation
@@ -187,65 +182,56 @@ class Dataset_Generator(keras.utils.Sequence):
                 self.da_stats.append([])
 
 
-    def make_train_set (self):
-        # Keep this initialization inside of this if ;)
-        self.X_global = np.array([])
-        self.y_global = np.array([])
-
-        for nFiles in range(self.total_images // self.batch_size):
-            #print("nFiles: {}".format(nFiles))
-            #print("self.total_images // self.batch_size : {}".format(self.total_images // self.batch_size))
-
-            X_noneo_names =        self.X_noneo[nFiles * self.noneo_batch_size:(nFiles + 1) * self.noneo_batch_size]
-            y_noneo_labels = self.y_noneo_class[nFiles * self.noneo_batch_size:(nFiles + 1) * self.noneo_batch_size]
-            #print("\n")
-            #print("len(X_noneo_names): {}".format(len(X_noneo_names)))
-            #print("X_noneo_names: {}".format(X_noneo_names))
-            #print("leng(y_noneo_labels): {}".format(len(y_noneo_labels)))
-            #print("y_noneo_labels: {}".format(y_noneo_labels))
-
-            X_neop_names =        self.X_neop[nFiles * self.neop_batch_size:(nFiles + 1) * self.neop_batch_size]
-            y_neop_labels = self.y_neop_class[nFiles * self.neop_batch_size:(nFiles + 1) * self.neop_batch_size]
-
-            #print("\n")
-            #print("len(X_neop_names): {}".format(len(X_neop_names)))
-            #print("X_neop_names: {}".format(X_neop_names))
-            #print("len(y_neop_labels): {}".format(len(y_neop_labels)))
-            #print("y_neop_labels: {}".format(y_neop_labels))
-
-            X_tmp = np.concatenate((X_noneo_names, X_neop_names), axis=0)
-            y_tmp = np.concatenate((y_noneo_labels, y_neop_labels), axis=0)
-
-
-            self.X_global = np.concatenate((self.X_global, X_tmp), axis=0)
-            self.y_global = np.concatenate((self.y_global, y_tmp), axis=0)
-
-            #print("\n")
-            #print("len(self.X_global): {}".format(len(self.X_global)))
-            #print("self.X_global: {}".format(self.X_global))
-            #print("len(self.y_global): {}".format(len(self.y_global)))
-            #print("self.y_global: {}".format(self.y_global))
-        # DO NOT SHUFFLE, BECAUSE IMAGES ARE READY TO BE TAKEN BY THE BATCH_SIZE
-
-
-
-    def __len__(self):
-        #'Denotes the number of batches per epoch'
-        return int(self.total_images // self.batch_size)
-
-    def on_epoch_end(self):
-        #'Updates indexes after each epoch'
+    def mix(self):
         if self.mode == 'test' or self.mode == 'validation':
             self.X_global = np.concatenate((self.X_noneo, self.X_neop), axis=0)
             self.y_global = np.concatenate((self.y_noneo_class, self.y_neop_class), axis=0)
             if self.shuffle_dataset:
-                shuffle(self.X_global, self.y_global, self.seed)
+                shuffle(self.X_global, self.y_global)
 
         if self.mode == 'train':           
             if self.shuffle_dataset:
-                shuffle(self.X_noneo, self.y_noneo_class, self.seed)
-                shuffle(self.X_neop, self.y_neop_class, self.seed)
-                self.make_train_set()
+                shuffle(self.X_noneo, self.y_noneo_class)
+                shuffle(self.X_neop, self.y_neop_class)
+
+            # Keep this initialization inside of this if ;)
+            self.X_global = np.array([])
+            self.y_global = np.array([])
+
+            for nFiles in range(self.total_images // self.batch_size):
+                #print("nFiles: {}".format(nFiles))
+                #print("self.total_images // self.batch_size : {}".format(self.total_images // self.batch_size))
+
+                X_noneo_names =        self.X_noneo[nFiles * self.noneo_batch_size:(nFiles + 1) * self.noneo_batch_size]
+                y_noneo_labels = self.y_noneo_class[nFiles * self.noneo_batch_size:(nFiles + 1) * self.noneo_batch_size]
+                #print("\n")
+                #print("len(X_noneo_names): {}".format(len(X_noneo_names)))
+                #print("X_noneo_names: {}".format(X_noneo_names))
+                #print("leng(y_noneo_labels): {}".format(len(y_noneo_labels)))
+                #print("y_noneo_labels: {}".format(y_noneo_labels))
+
+                X_neop_names =        self.X_neop[nFiles * self.neop_batch_size:(nFiles + 1) * self.neop_batch_size]
+                y_neop_labels = self.y_neop_class[nFiles * self.neop_batch_size:(nFiles + 1) * self.neop_batch_size]
+
+                #print("\n")
+                #print("len(X_neop_names): {}".format(len(X_neop_names)))
+                #print("X_neop_names: {}".format(X_neop_names))
+                #print("len(y_neop_labels): {}".format(len(y_neop_labels)))
+                #print("y_neop_labels: {}".format(y_neop_labels))
+
+                X_tmp = np.concatenate((X_noneo_names, X_neop_names), axis=0)
+                y_tmp = np.concatenate((y_noneo_labels, y_neop_labels), axis=0)
+
+
+                self.X_global = np.concatenate((self.X_global, X_tmp), axis=0)
+                self.y_global = np.concatenate((self.y_global, y_tmp), axis=0)
+
+                #print("\n")
+                #print("len(self.X_global): {}".format(len(self.X_global)))
+                #print("self.X_global: {}".format(self.X_global))
+                #print("len(self.y_global): {}".format(len(self.y_global)))
+                #print("self.y_global: {}".format(self.y_global))
+            # DO NOT SHUFFLE, BECAUSE IMAGES ARE READY TO BE TAKEN BY THE BATCH_SIZE
 
 
     def preprocess(self, cf, X_all):
@@ -727,48 +713,98 @@ class Dataset_Generator(keras.utils.Sequence):
             return x
 
 
-    def __data_generation(self):
-
-        img_batch = []
-        lab_batch = []
-    
-        if self.shuffle_batch:
-            shuffle(self.batch_fnames, self.batch_labels, self.seed_batch)
-    
-        #fnames_list=[]
-                    
-        # Create the batch_x and batch_y
-        for idx, image_name in enumerate(self.batch_fnames):
-    
-            image = load_img(os.path.join(self.dataset_images_path, image_name), resize=self.resize_image)
-            #fnames_list.append(image_name)
-            image = np.asarray(image, dtype='float32')   # image = image.astype('float32')
-            image = self.standardize(image)
-            if self.mode == 'train':
-                image = self.data_augmentation(image, idx)
-            else:
-                if self.crop_size is not None:
-                    image = self.crop(image, 'center')
-    
-    
-            #image = skimage.transform.resize(image, self.resize_image, order=1, preserve_range=True)
-    
-            # Add images to batches
-            img_batch.append(image)
-            # Build batch of label data, reshape and add to batch
-            lab_batch.append(to_categorical(self.batch_labels[idx], self.n_classes).reshape(self.n_classes))
-            #print("SHAPE img_batch: {} , lab_batch: {}: ".format( np.array(img_batch).shape, np.array(lab_batch).shape )) 
-    
-        return (np.array(img_batch), np.array(lab_batch))
-
-
     # strategy 1: keep unbalanced each batch as the dataset.
-    def __getitem__(self, index):
-        self.batch_fnames = self.X_global[index * self.batch_size:(index + 1) * self.batch_size]
-        self.batch_labels = self.y_global[index * self.batch_size:(index + 1) * self.batch_size]
+    def generate(self):
 
-        assert len(self.batch_fnames) == self.batch_size
+        while True:
 
-        X, y = self.__data_generation()
-        return X, y
+
+            for nFiles in range(self.total_images // self.batch_size):
+
+                #print("\n")
+                #print("MODE: {}".format(self.mode))
+
+                #if self.mode == 'train' or self.mode =='validation': 
+                #    print("nFiles: {}".format(nFiles))
+                #    print("self.total_images: {}".format(self.total_images))
+                #    print("self.batch_size: {}".format(self.batch_size))
+                #    print("\n")
+    
+                #    print("self.total_images // self.batch_size : {}".format(self.total_images // self.batch_size))
+                #    print("len(self.X_global): {}".format(len(self.X_global)))
+
+                self.batch_fnames = self.X_global[nFiles * self.batch_size:(nFiles + 1) * self.batch_size]
+                self.batch_labels = self.y_global[nFiles * self.batch_size:(nFiles + 1) * self.batch_size]
+
+                #if self.mode == 'train' or self.mode =='validation':
+                #    print("\n")
+                #    print("len(self.batch_fnames): {}".format(len(self.batch_fnames)))
+                #    print("self.batch_fnames: {}".format(self.batch_fnames))
+                #    print("len(self.batch_labels): {}".format(len(self.batch_labels)))
+                #    print("self.batch_labels: {}".format(self.batch_labels))
+
+
+                #print ("\n len(batch_fnames) = ", len(batch_fnames))
+                #print ("\n self.batch_size = ", self.batch_size)
+
+                assert len(self.batch_fnames) == self.batch_size
+
+                #if len(batch_fnames) != self.batch_size:
+                #    print("\n %%%%%%%%%")
+                #    continue
+
+                
+                #if len(batch_fnames) != self.batch_size:
+                #    print("\n >>>>>>>> batch_fnames = ", batch_fnames)
+                #    print("\n >>>>>>>> batch_labels = ", batch_labels)
+
+
+                #print(">>>>>>>> batch_fnames = ", batch_fnames)
+                #print(">>>>>>>> batch_labels = ", batch_labels)
+                img_batch = []
+                lab_batch = []
+
+                if self.shuffle_batch:
+                    shuffle(self.batch_fnames, self.batch_labels)
+
+                fnames_list=[]
+                
+                # Create the batch_x and batch_y
+                for idx, image_name in enumerate(self.batch_fnames):
+                    #print("\n Reading images")
+                    # image = imread(os.path.join(self.dataset_images_path, image_name))  # Build batch of image data
+                    #
+                    # if self.resize_image is not None:
+                    #     image = skimage.transform.resize(image, self.resize_image, order=1, preserve_range=True)
+                    #     #print("resized")
+                    
+                    #print("Reading image: {}",format(os.path.join(self.dataset_images_path, image_name)))
+                    #sys.stdout.flush()
+
+                    image = load_img(os.path.join(self.dataset_images_path, image_name), resize=self.resize_image)
+                    fnames_list.append(image_name)
+                    image = np.asarray(image, dtype='float32')   # image = image.astype('float32')
+                    image = self.standardize(image)
+                    if self.mode == 'train':
+                        image = self.data_augmentation(image, idx)
+                    else:
+                        if self.crop_size is not None:
+                            image = self.crop(image, 'center')
+
+
+                    #image = skimage.transform.resize(image, self.resize_image, order=1, preserve_range=True)
+
+                    # Add images to batches
+                    img_batch.append(image)
+                    # Build batch of label data, reshape and add to batch
+                    lab_batch.append(to_categorical(self.batch_labels[idx], self.n_classes).reshape(self.n_classes))
+                    #print("SHAPE img_batch: {} , lab_batch: {}: ".format( np.array(img_batch).shape, np.array(lab_batch).shape )) 
+                
+
+                #print("\n >> lab_batch = ", np.array(lab_batch)) 
+                #if self.mode == 'validation':
+                #    sys.stdout.flush()
+                #    print(fnames_list) 
+                #    sys.stdout.flush()
+                yield (np.array(img_batch), np.array(lab_batch))
 

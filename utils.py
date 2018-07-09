@@ -43,11 +43,13 @@ def filter_by_class(X, y, filter):
 
     return np.copy(X[idx_arr]), np.copy(y[idx_arr])
 
-def shuffle (X, y):
-    r = random.random()
+def shuffle (X, y, r):
+    #r = random.random()
     #print (r)
-    random.shuffle(X, lambda: r)  # shuffle images_filenames
-    random.shuffle(y, lambda: r)  # shuffle labels
+    #random.shuffle(X, lambda: r)  # shuffle images_filenames
+    #random.shuffle(y, lambda: r)  # shuffle labels
+    random.Random(r).shuffle(X)
+    random.Random(r).shuffle(y)
 
 
 def dataset_bins_idx(X, y, n_splits):

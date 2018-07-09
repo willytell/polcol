@@ -71,8 +71,8 @@ class Keep_Unbalanced(object):
 
         if cf.num_classes == 2:
             print('\n > Shuffling the noneo and neop classes...')
-            shuffle(self.X_noneo, self.y_noneo)
-            shuffle(self.X_neop, self.y_neop)
+            shuffle(self.X_noneo, self.y_noneo, cf.seed_train)
+            shuffle(self.X_neop, self.y_neop, cf.seed_train)
 
             # Test set
             print('\n > Test set...')
