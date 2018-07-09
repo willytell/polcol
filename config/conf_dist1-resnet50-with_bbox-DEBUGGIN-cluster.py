@@ -1,8 +1,8 @@
 # Experiment config file
 
 # Experiment configuration
-experiment_name = "exp1-whole_image"
-experiments_path= "/home/willytell/Experiments"
+experiment_name = "dist1"
+experiments_path= "/home/csanchez/Experiments"
 experiment_prefix = "experiment"
 num_repetition_experiment = 3      # Repeat n times the experiment
 
@@ -16,15 +16,15 @@ num_classes = 2
 # Dataset conf
 dataset_division_strategy = "keep-unbalanced" # keep unbalanced rates of each classes from the original dataset
 dataset_prefix = "dataset"
-dataset_directory = "/home/willytell/Documentos/MCV/M9/TFM/ExperCNN"
+dataset_directory = "/home/csanchez/Documentos/MCV/M9/TFM/ExperCNN"
 images_filenames = "images_filenames.txt"
 labels = "binary_classification.txt"
-#dataset_images_path = "/home/willytell/Documentos/MCV/M9/TFM/ExperCNN/Original"   # all images are in this folder
-dataset_images_path = "/home/willytell/Documentos/MCV/M9/TFM/ExperCNN/BBox"   # all images are in this folder
+#dataset_images_path = "/home/csanchez/Documentos/MCV/M9/TFM/ExperCNN/Original"   # all images are in this folder
+dataset_images_path = "/home/csanchez/Documentos/MCV/M9/TFM/ExperCNN/BBox"   # all images are in this folder
 
 # Generate images using bounding boxes of masks.
-dataset_mask_directory = "/home/willytell/Documentos/MCV/M9/TFM/ExperCNN/GT"
-bbox_output_path       = "/home/willytell/Documentos/MCV/M9/TFM/ExperCNN/BBox"    # directory to write the images from mask
+dataset_mask_directory = "/home/csanchez/Documentos/MCV/M9/TFM/ExperCNN/GT"
+bbox_output_path       = "/home/csanchez/Documentos/MCV/M9/TFM/ExperCNN/BBox"    # directory to write the images from mask
 
 
 # Model
@@ -37,7 +37,7 @@ weights_suffix               = 'weights.hdf5'  # Pre-Trained weight file name
 
 
 # Batch sizes
-batch_size_train = 8            # Batch size during training
+batch_size_train = 16           # Batch size during training
 batch_size_valid = 3            # Batch size during validation
 batch_size_test  = 6            # Batch size during testing
 
@@ -88,13 +88,13 @@ checkpoint_save_weights_only = True            # Save only weights or also model
 checkpoint_verbose           = 1               # Verbosity of the checkpoint
 
 # Data augmentation for training
-apply_augmentation           = False
-n_augmentation               = 55
+apply_augmentation           = True
+n_augmentation               = 20
 
 da_rotation_range            = 45         # Rnd rotation degrees 0-180
-da_width_shift_range         = 0.01       # Rnd horizontal shift
-da_height_shift_range        = 0.01       # Rnd vertical shift
-da_shear_range               = 0.02       # Shear in radians
+da_width_shift_range         = 0.02       # Rnd horizontal shift
+da_height_shift_range        = 0.00       # Rnd vertical shift
+da_shear_range               = 0.018      # Shear in radians
 da_zoom_range                = [1, 1]     # Zoom
 da_channel_shift_range       = 0.         # Channecf.l shifts
 da_fill_mode                 = 'constant' # Fill mode ['constant' | 'nearest']

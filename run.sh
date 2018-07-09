@@ -2,99 +2,31 @@
 
 echo "begining..."
 
-echo "Experiment: Results5-partC"
+echo "Experiment: Results5-partB"
 echo "Dataset: images from BBox"
-echo "Configuration: without pre-trained weights, without data augmentation, without images for test, and saving weights on epoch end"
+echo "Configuration: ImageNet pre-trained weights, without data augmentation."
 
-#echo "distA"
-#CUDA_VISIBLE_DEVICES=0 python3 main.py -c config/conf_no-test-distA-resnet50-with_bbox-exp0.py -a train -e 0 &>logs/no-test-distA-resnet50-with_bbox-exp0-train
-#
-#CUDA_VISIBLE_DEVICES=0 python3 main.py -c config/conf_no-test-distA-resnet50-with_bbox-exp1.py -a train -e 1 &>logs/no-test-distA-resnet50-with_bbox-exp1-train
-#
-#CUDA_VISIBLE_DEVICES=0 python3 main.py -c config/conf_no-test-distA-resnet50-with_bbox-exp2.py -a train -e 2 &>logs/no-test-distA-resnet50-with_bbox-exp2-train
-#
-#CUDA_VISIBLE_DEVICES=0 python3 main.py -c config/conf_no-test-distA-resnet50-with_bbox-exp3.py -a train -e 3 &>logs/no-test-distA-resnet50-with_bbox-exp3-train
-#
-#CUDA_VISIBLE_DEVICES=0 python3 main.py -c config/conf_no-test-distA-resnet50-with_bbox-exp4.py -a train -e 4 &>logs/no-test-distA-resnet50-with_bbox-exp4-train
-#
-#CUDA_VISIBLE_DEVICES=0 python3 main.py -c config/conf_no-test-distA-resnet50-with_bbox-exp5.py -a train -e 5 &>logs/no-test-distA-resnet50-with_bbox-exp5-train
-#
-#CUDA_VISIBLE_DEVICES=0 python3 main.py -c config/conf_no-test-distA-resnet50-with_bbox-exp6.py -a train -e 6 &>logs/no-test-distA-resnet50-with_bbox-exp6-train
-#
-#CUDA_VISIBLE_DEVICES=0 python3 main.py -c config/conf_no-test-distA-resnet50-with_bbox-exp7.py -a train -e 7 &>logs/no-test-distA-resnet50-with_bbox-exp7-train
-#
-#CUDA_VISIBLE_DEVICES=0 python3 main.py -c config/conf_no-test-distA-resnet50-with_bbox-exp8.py -a train -e 8 &>logs/no-test-distA-resnet50-with_bbox-exp8-train
-#
-#CUDA_VISIBLE_DEVICES=0 python3 main.py -c config/conf_no-test-distA-resnet50-with_bbox-exp9.py -a train -e 9 &>logs/no-test-distA-resnet50-with_bbox-exp9-train
+echo "dist1"
+#python3 main.py -c config/conf_dist1-resnet50-with_bbox-DEBUGGIN.py -a train &>logs/dist1-resnet50-with_bbox-DEBUGGIN-train
+python3 main.py -c config/conf_dist1-resnet50-with_bbox-DEBUGGIN-2.py -a train &>logs/dist1-resnet50-with_bbox-DEBUGGIN-2-train
+#python3 main.py -c config/conf_dist1-resnet50-with_bbox-imagenet.py -a test  &>logs/dist1-resnet50-with_bbox-imagenet-test
 
-
-#echo "distB"
-#CUDA_VISIBLE_DEVICES=0 python3 main.py -c config/conf_no-test-distB-resnet50-with_bbox-exp0.py -a train -e 0 &>logs/no-test-distB-resnet50-with_bbox-exp0-train
+#echo "dist2"
+#CUDA_VISIBLE_DEVICES=0 python3 main.py -c config/conf_dist2-resnet50-with_bbox-imagenet.py -a train &>logs/dist2-resnet50-with_bbox-imagenet-train
+#CUDA_VISIBLE_DEVICES=0 python3 main.py -c config/conf_dist2-resnet50-with_bbox-imagenet.py -a test  &>logs/dist2-resnet50-with_bbox-imagenet-test
 #
-#CUDA_VISIBLE_DEVICES=0 python3 main.py -c config/conf_no-test-distB-resnet50-with_bbox-exp1.py -a train -e 1 &>logs/no-test-distB-resnet50-with_bbox-exp1-train
+#echo "dist3"
+#CUDA_VISIBLE_DEVICES=0 python3 main.py -c config/conf_dist3-resnet50-with_bbox-imagenet.py -a train &>logs/dist3-resnet50-with_bbox-imagenet-train
+#CUDA_VISIBLE_DEVICES=0 python3 main.py -c config/conf_dist3-resnet50-with_bbox-imagenet.py -a test  &>logs/dist3-resnet50-with_bbox-imagenet-test
 #
-#CUDA_VISIBLE_DEVICES=0 python3 main.py -c config/conf_no-test-distB-resnet50-with_bbox-exp2.py -a train -e 2 &>logs/no-test-distB-resnet50-with_bbox-exp2-train
+#echo "dist4"
+#CUDA_VISIBLE_DEVICES=0 python3 main.py -c config/conf_dist4-resnet50-with_bbox-imagenet.py -a train &>logs/dist4-resnet50-with_bbox-imagenet-train
+#CUDA_VISIBLE_DEVICES=0 python3 main.py -c config/conf_dist4-resnet50-with_bbox-imagenet.py -a test  &>logs/dist4-resnet50-with_bbox-imagenet-test
 #
-#CUDA_VISIBLE_DEVICES=0 python3 main.py -c config/conf_no-test-distB-resnet50-with_bbox-exp3.py -a train -e 3 &>logs/no-test-distB-resnet50-with_bbox-exp3-train
 #
-#CUDA_VISIBLE_DEVICES=0 python3 main.py -c config/conf_no-test-distB-resnet50-with_bbox-exp4.py -a train -e 4 &>logs/no-test-distB-resnet50-with_bbox-exp4-train
-#
-#CUDA_VISIBLE_DEVICES=0 python3 main.py -c config/conf_no-test-distB-resnet50-with_bbox-exp5.py -a train -e 5 &>logs/no-test-distB-resnet50-with_bbox-exp5-train
-#
-#CUDA_VISIBLE_DEVICES=0 python3 main.py -c config/conf_no-test-distB-resnet50-with_bbox-exp6.py -a train -e 6 &>logs/no-test-distB-resnet50-with_bbox-exp6-train
-#
-#CUDA_VISIBLE_DEVICES=0 python3 main.py -c config/conf_no-test-distB-resnet50-with_bbox-exp7.py -a train -e 7 &>logs/no-test-distB-resnet50-with_bbox-exp7-train
-#
-#CUDA_VISIBLE_DEVICES=0 python3 main.py -c config/conf_no-test-distB-resnet50-with_bbox-exp8.py -a train -e 8 &>logs/no-test-distB-resnet50-with_bbox-exp8-train
-#
-#CUDA_VISIBLE_DEVICES=0 python3 main.py -c config/conf_no-test-distB-resnet50-with_bbox-exp9.py -a train -e 9 &>logs/no-test-distB-resnet50-with_bbox-exp9-train
-#
-
-#echo "distC"
-#CUDA_VISIBLE_DEVICES=0 python3 main.py -c config/conf_no-test-distC-resnet50-with_bbox-exp0.py -a train -e 0 &>logs/no-test-distC-resnet50-with_bbox-exp0-train
-#
-#CUDA_VISIBLE_DEVICES=0 python3 main.py -c config/conf_no-test-distC-resnet50-with_bbox-exp1.py -a train -e 1 &>logs/no-test-distC-resnet50-with_bbox-exp1-train
-#
-#CUDA_VISIBLE_DEVICES=0 python3 main.py -c config/conf_no-test-distC-resnet50-with_bbox-exp2.py -a train -e 2 &>logs/no-test-distC-resnet50-with_bbox-exp2-train
-#
-#CUDA_VISIBLE_DEVICES=0 python3 main.py -c config/conf_no-test-distC-resnet50-with_bbox-exp3.py -a train -e 3 &>logs/no-test-distC-resnet50-with_bbox-exp3-train
-#
-#CUDA_VISIBLE_DEVICES=0 python3 main.py -c config/conf_no-test-distC-resnet50-with_bbox-exp4.py -a train -e 4 &>logs/no-test-distC-resnet50-with_bbox-exp4-train
-#
-#CUDA_VISIBLE_DEVICES=0 python3 main.py -c config/conf_no-test-distC-resnet50-with_bbox-exp5.py -a train -e 5 &>logs/no-test-distC-resnet50-with_bbox-exp5-train
-#
-#CUDA_VISIBLE_DEVICES=0 python3 main.py -c config/conf_no-test-distC-resnet50-with_bbox-exp6.py -a train -e 6 &>logs/no-test-distC-resnet50-with_bbox-exp6-train
-#
-#CUDA_VISIBLE_DEVICES=0 python3 main.py -c config/conf_no-test-distC-resnet50-with_bbox-exp7.py -a train -e 7 &>logs/no-test-distC-resnet50-with_bbox-exp7-train
-#
-#CUDA_VISIBLE_DEVICES=0 python3 main.py -c config/conf_no-test-distC-resnet50-with_bbox-exp8.py -a train -e 8 &>logs/no-test-distC-resnet50-with_bbox-exp8-train
-#
-#CUDA_VISIBLE_DEVICES=0 python3 main.py -c config/conf_no-test-distC-resnet50-with_bbox-exp9.py -a train -e 9 &>logs/no-test-distC-resnet50-with_bbox-exp9-train
-
-
-echo "distD"
-CUDA_VISIBLE_DEVICES=0 python3 main.py -c config/conf_no-test-distD-resnet50-with_bbox-exp0.py -a train -e 0 &>logs/no-test-distD-resnet50-with_bbox-exp0-train
-
-CUDA_VISIBLE_DEVICES=0 python3 main.py -c config/conf_no-test-distD-resnet50-with_bbox-exp1.py -a train -e 1 &>logs/no-test-distD-resnet50-with_bbox-exp1-train
-
-CUDA_VISIBLE_DEVICES=0 python3 main.py -c config/conf_no-test-distD-resnet50-with_bbox-exp2.py -a train -e 2 &>logs/no-test-distD-resnet50-with_bbox-exp2-train
-
-CUDA_VISIBLE_DEVICES=0 python3 main.py -c config/conf_no-test-distD-resnet50-with_bbox-exp3.py -a train -e 3 &>logs/no-test-distD-resnet50-with_bbox-exp3-train
-
-CUDA_VISIBLE_DEVICES=0 python3 main.py -c config/conf_no-test-distD-resnet50-with_bbox-exp4.py -a train -e 4 &>logs/no-test-distD-resnet50-with_bbox-exp4-train
-
-CUDA_VISIBLE_DEVICES=0 python3 main.py -c config/conf_no-test-distD-resnet50-with_bbox-exp5.py -a train -e 5 &>logs/no-test-distD-resnet50-with_bbox-exp5-train
-
-CUDA_VISIBLE_DEVICES=0 python3 main.py -c config/conf_no-test-distD-resnet50-with_bbox-exp6.py -a train -e 6 &>logs/no-test-distD-resnet50-with_bbox-exp6-train
-
-CUDA_VISIBLE_DEVICES=0 python3 main.py -c config/conf_no-test-distD-resnet50-with_bbox-exp7.py -a train -e 7 &>logs/no-test-distD-resnet50-with_bbox-exp7-train
-
-CUDA_VISIBLE_DEVICES=0 python3 main.py -c config/conf_no-test-distD-resnet50-with_bbox-exp8.py -a train -e 8 &>logs/no-test-distD-resnet50-with_bbox-exp8-train
-
-CUDA_VISIBLE_DEVICES=0 python3 main.py -c config/conf_no-test-distD-resnet50-with_bbox-exp9.py -a train -e 9 &>logs/no-test-distD-resnet50-with_bbox-exp9-train
-
-
-#echo "distE"
+#echo "dist5"
+#CUDA_VISIBLE_DEVICES=0 python3 main.py -c config/conf_dist5-resnet50-with_bbox-imagenet.py -a train &>logs/dist5-resnet50-with_bbox-imagenet-train
+#CUDA_VISIBLE_DEVICES=0 python3 main.py -c config/conf_dist5-resnet50-with_bbox-imagenet.py -a test  &>logs/dist5-resnet50-with_bbox-imagenet-test
 
 
 echo "finished!"

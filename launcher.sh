@@ -1,19 +1,15 @@
-#!/bin/bash
+# Con este fichero lanzamos un trabajo que nos permite ver que valor contendrá en el entorno
+# CUDA_VISIBLE_DEVICES al solicitar la cantidad de gráficas que queramos.
 
-CONFIG_PATH="/imatge/mgorriz/work/Guillermo/polcol/config"
-OUTPUT_PATH="/imatge/mgorriz/work/Guillermo/polcol/logs"
+#SBATCH -n 4 # Number of cores
+#SBATCH -N 1 # Ensure that all cores are on one machine
+#SBATCH -D /tmp # working directory
+#SBATCH -t 0-00:05 # Runtime in D-HH:MM
+#SBATCH -p dcc # Partition to submit to
+#SBATCH --mem 2048 # 2GB solicitados.
+#SBATCH --gres gpu:Pascal:1 # Para pedir Pascales MAX 8
+#SBATCH -o %x_%u_%j.out # File to which STDOUT will be written
+#SBATCH -e %x_%u_%j.err # File to which STDERR will be written
 
-if [ "$1" = "divide" ]
-then
-    srun --pty --gres=gpu:1,gmem:12G --mem 8G python3 #main.py -c $CONFIG_PATH/conf_exp1-sm.py -a divide #&>logs/vgg-from-scratch-generate
-elif [ "$1" = "train" ]
-then
-    srun --pty --gres=gpu:1,gmem:12G --mem 8G python3 main.py -c $CONFIG_PATH/conf_dist1-resnet50-with_bbox-DEBUGGIN-sm.py -a train &>logs/log3
-#dist1-resnet50-with_bbox-DEBUGGIN-sm-train
 
-elif [ "$1" = "test" ]
-then
-    srun --pty --gres=gpu:1,gmem:12G --mem 8G python3 main.py -c config/conf_dist1-resnet50-with_bbox-DEBUGGIN-sm.py -a test &>logs/dist1-resnet50-with_bbox-DEBUGGIN-sm-test
-else
-    echo "Unknown option; expected: divide, train or test."
-fi
+sbatch -D /home/csanchez/polcol -t 5-10:05 --mem 8192 --gres=gpu:Pascal:1 ./run.sh
