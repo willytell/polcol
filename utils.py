@@ -8,7 +8,7 @@ from imblearn.metrics import classification_report_imbalanced
 from sklearn.utils.multiclass import unique_labels    
 
 from sklearn.model_selection import StratifiedKFold
-from scipy.misc import imread
+from scipy.misc import imread, imsave
 #from imageio import imread
 import skimage.transform
 
@@ -77,6 +77,13 @@ def load_img(path, resize=None, order=1, preserve_range=True):
 
     # Return image
     return img
+
+def save_img(full_path, img):
+    if not os.path.exists(full_path):
+        os.makedirs(full_path)
+
+    imsave(full_path, img)
+
 
 
 # Precompute the mean and std

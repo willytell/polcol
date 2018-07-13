@@ -68,6 +68,9 @@ if __name__ == '__main__':
             # copy a file from source to the destination with a new name.
             shutil.copy(source, destination)
 
+
+    # Example:
+    # python save_prefix_image.py -i "/home/willytell/Documentos/MCV/M9/TFM/ExperCNN/BBox" -d "data.csv" -o "/home/willytell/Experiments/feed_cnn" -a "feed_cnn"
     elif args.action == 'feed_cnn':
         # "Image Name", "class", "% Aciertos", "Mean (Diff)", "DevStd (Diff)"
         X = np.genfromtxt(args.data, delimiter=",", usecols=(0), dtype='str')

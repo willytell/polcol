@@ -13,7 +13,7 @@ from keras.utils import to_categorical
 from random import randint
 from scipy.misc import imread
 import skimage.transform
-from utils import compute_mean_std, load_img
+from utils import compute_mean_std, load_img, save_img
 from random import randint
 from utils import shuffle
 
@@ -741,6 +741,22 @@ class Dataset_Generator(keras.utils.Sequence):
         for idx, image_name in enumerate(self.batch_fnames):
     
             image = load_img(os.path.join(self.dataset_images_path, image_name), resize=self.resize_image)
+
+            # write image
+            if True: #self.save_feed_cnn:
+                 path = "/home/willytell/Experiments/dist5/exp2-kfold4"
+                 if self.batch_labels[idx] == 0: # 0 means noneo class, 1 means neo class
+                     if self.mode == 'train':      path = os.path.join(path, "feeding_images-train", "no_neoplasico")       
+                     if self.mode == 'validation': path = os.path.join(path, "feeding_images-valid", "no_neoplasico")
+                     if self.mode == 'test':       path = os.path.join(path, "feeding_images-test", "no_neoplasico")
+                 else:
+                     if self.mode == 'train':      path = os.path.join(path, "feeding_images-train", "neoplasico")
+                     if self.mode == 'validation': path = os.path.join(path, "feeding_images-valid", "neoplasico")
+                     if self.mode == 'test':       path = os.path.join(path, "feeding_images-test", "neoplasico")
+
+                 save_img(os.path.join(path, image_name), image) 
+
+
             #fnames_list.append(image_name)
             image = np.asarray(image, dtype='float32')   # image = image.astype('float32')
             image = self.standardize(image)
