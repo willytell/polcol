@@ -23,7 +23,7 @@ if __name__ == '__main__':
 
     # Example:
     # Option -c: -c 1 = "% Aciertos", -c 2 = "Mean (Diff)", -c 3 = "DevStd (Diff)"
-    # python save_prefix_image.py -i "/home/willytell/Documentos/MCV/M9/TFM/ExperCNN/BBox" -d "data.csv" -c 1 -o "/home/willytell/Documentos/MCV/M9/TFM/ExperCNN/test"
+    # python save_prefix_image.py -i "/home/willytell/Documentos/MCV/M9/TFM/ExperCNN/BBox" -d "data.csv" -c 1 -o "/home/willytell/Documentos/MCV/M9/TFM/ExperCNN/test" -a "prefix"
     if args.action == 'prefix':
         #"Image Name", "class", "% Aciertos", "Mean (Diff)", "DevStd (Diff)"
         image_names = np.genfromtxt(args.data, delimiter=",", usecols=(0), dtype='str')
@@ -71,6 +71,9 @@ if __name__ == '__main__':
 
     # Example:
     # python save_prefix_image.py -i "/home/willytell/Documentos/MCV/M9/TFM/ExperCNN/BBox" -d "data.csv" -o "/home/willytell/Experiments/feed_cnn" -a "feed_cnn"
+    #
+    # notebook: 
+    # python save_prefix_image.py -i "/home/willytell/Documentos/MCV/M9/TFM/ExperCNN/BBox" -d "data.csv" -o "/home/willytell/Experiments/feed_cnn" -a "feed_cnn"
     elif args.action == 'feed_cnn':
         # "Image Name", "class", "% Aciertos", "Mean (Diff)", "DevStd (Diff)"
         X = np.genfromtxt(args.data, delimiter=",", usecols=(0), dtype='str')
@@ -82,7 +85,6 @@ if __name__ == '__main__':
 
         X_noneo, y_noneo = filter_by_class(X, y, 0)
         X_neop,  y_neop  = filter_by_class(X, y, 1)
-
 
 
         #experiment0_dataset_24_5_X_test_neop.npy

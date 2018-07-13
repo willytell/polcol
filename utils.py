@@ -79,8 +79,8 @@ def load_img(path, resize=None, order=1, preserve_range=True):
     return img
 
 def save_img(full_path, img):
-    if not os.path.exists(full_path):
-        os.makedirs(full_path)
+    #if not os.path.exists(full_path):
+    #    os.makedirs(full_path)
 
     imsave(full_path, img)
 
