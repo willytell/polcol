@@ -18,7 +18,7 @@ if __name__ == '__main__':
     parser.add_argument('-d', '--data', type=str, default='data.csv', help='csv file with data')
     parser.add_argument('-o', '--output_dir', type=str, default=None, help='directory to save images')
     parser.add_argument('-c', '--column', type=int, default=None, help='column to set the prefix')
-    parser.add_argument('-t', '--threshold', type=int, default=None, help='threshols')
+    parser.add_argument('-t', '--threshold', type=float, default=None, help='threshols')
     parser.add_argument('-a', '--action', type=str, default=None, help='feed_cnn, prefix, select')
     args = parser.parse_args()
 
@@ -101,6 +101,10 @@ if __name__ == '__main__':
         np.save(os.path.join(args.output_dir, cad + '_X_test_noneo'), X_noneo)
         np.save(os.path.join(args.output_dir, cad + '_y_test_noneo'), y_noneo)
 
+
+    # Example:
+    # Option -c: -c 1 = "% Aciertos", -c 2 = "Mean (Diff)", -c 3 = "DevStd (Diff)"
+    # python save_prefix_image.py -d "data.csv" -c 1 -t 0.8 -a "selection"
     elif args.action == 'selection':
         #"Image Name", "class", "% Aciertos", "Mean (Diff)", "DevStd (Diff)"
         image_names = np.genfromtxt(args.data, delimiter=",", usecols=(0), dtype='str')
