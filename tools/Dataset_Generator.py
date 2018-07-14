@@ -742,6 +742,16 @@ class Dataset_Generator(keras.utils.Sequence):
     
             image = load_img(os.path.join(self.dataset_images_path, image_name), resize=self.resize_image)
 
+            #fnames_list.append(image_name)
+            image = np.asarray(image, dtype='float32')   # image = image.astype('float32')
+            image = self.standardize(image)
+            if self.mode == 'train':
+                image = self.data_augmentation(image, idx)
+            else:
+                if self.crop_size is not None:
+                    image = self.crop(image, 'center')
+
+
             # write image
             if True: #self.save_feed_cnn:
                  path = "/home/willytell/Experiments/feed_cnn/exp0-kfold0"
@@ -762,16 +772,8 @@ class Dataset_Generator(keras.utils.Sequence):
                  save_img(os.path.join(path, image_name), image) 
 
 
-            #fnames_list.append(image_name)
-            image = np.asarray(image, dtype='float32')   # image = image.astype('float32')
-            image = self.standardize(image)
-            if self.mode == 'train':
-                image = self.data_augmentation(image, idx)
-            else:
-                if self.crop_size is not None:
-                    image = self.crop(image, 'center')
-    
-    
+
+
             #image = skimage.transform.resize(image, self.resize_image, order=1, preserve_range=True)
     
             # Add images to batches
