@@ -17,8 +17,9 @@ if __name__ == '__main__':
     parser.add_argument('-i', '--input_dir', type=str, default=None, help='directory with images')
     parser.add_argument('-d', '--data', type=str, default='data.csv', help='csv file with data')
     parser.add_argument('-o', '--output_dir', type=str, default=None, help='directory to save images')
-    parser.add_argument('-c', '--column_prefix', type=int, default=None, help='column to set the prefix')
-    parser.add_argument('-a', '--action', type=str, default=None, help='')
+    parser.add_argument('-c', '--column', type=int, default=None, help='column to set the prefix')
+    parser.add_argument('-t', '--threshold', type=int, default=None, help='threshols')
+    parser.add_argument('-a', '--action', type=str, default=None, help='feed_cnn, prefix, select')
     args = parser.parse_args()
 
     # Example:
@@ -40,11 +41,11 @@ if __name__ == '__main__':
 
             # args.column_prefix determines the column to be used to set the prefix
             prefix = '000'
-            if args.column_prefix == 1:    # 1 = "% Aciertos"
+            if args.column == 1:    # 1 = "% Aciertos"
                 prefix = "{:.4f}".format(stats[idx, 1])
-            elif args.column_prefix == 2:  # 2 = "Mean (Diff)"
+            elif args.column == 2:  # 2 = "Mean (Diff)"
                 prefix = "{:.10f}".format(stats[idx, 2])
-            elif args.column_prefix == 3:  # 3 = "DevStd (Diff)"
+            elif args.column == 3:  # 3 = "DevStd (Diff)"
                 prefix = "{:.16f}".format(stats[idx, 3])
 
             new_name = prefix + '_' + old_name         # 0.0998234_image00123.bmp
@@ -99,6 +100,25 @@ if __name__ == '__main__':
 
         np.save(os.path.join(args.output_dir, cad + '_X_test_noneo'), X_noneo)
         np.save(os.path.join(args.output_dir, cad + '_y_test_noneo'), y_noneo)
+
+    elif args.action == 'selection':
+        #"Image Name", "class", "% Aciertos", "Mean (Diff)", "DevStd (Diff)"
+        image_names = np.genfromtxt(args.data, delimiter=",", usecols=(0), dtype='str')
+        stats = np.genfromtxt(args.data, delimiter=",", usecols=(1,2,3,4))
+
+        # We have only 2 classes
+        # noneo = class 0
+        # neo   = class 1
+
+
+        # Option -c: -c 1 = "% Aciertos", -c 2 = "Mean (Diff)", -c 3 = "DevStd (Diff)"
+        for idx, fname in enumerate(image_names):
+            if args.column == 1:  # 1 = "% Aciertos"
+                if stats[idx, 1] >= args.threshold:
+                    print(image_names[idx])
+            else:
+                print("Unknown column.")
+
 
 
 
