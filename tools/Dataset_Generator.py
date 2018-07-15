@@ -553,7 +553,7 @@ class Dataset_Generator(keras.utils.Sequence):
 
 
         if self.crop_size is not None:
-            x = self.crop(x, 'center')
+            x = self.crop(x, None) #'center')  # <<<<<<<====================================== ATENCIÓN
         # Crop
         # TODO: tf compatible???
         #crop = list(self.crop_size) if self.crop_size else None

@@ -7,8 +7,13 @@ echo "Dataset: images from BBox"
 echo "Configuration: with ImageNet and without data augmentation"
 
 echo "dist50"
-CUDA_VISIBLE_DEVICES=0 python3 main.py -c config/conf_dist50-resnet50-bbox-imagenet-exp0.py -a train -e 0 &>logs/dist50-resnet50-bbox-imagenet-exp0-train
-#CUDA_VISIBLE_DEVICES=0 python3 main.py -c config/conf_dist50-resnet50-bbox-imagenet-exp0.py -a test  -e 0 -k 2 &>logs/dist50-resnet50-bbox-imagenet-exp0-test
+
+CUDA_VISIBLE_DEVICES=0 python3 main.py -c config/conf_dist50-resnet50-bbox-imagenet-da.py -a train -e 0 &>logs/dist50-resnet50-bbox-imagenet-da-exp0-train
+#CUDA_VISIBLE_DEVICES=0 python3 main.py -c config/conf_dist50-resnet50-bbox-imagenet-da.py -a test  -e 0 -k 0 &>logs/dist50-resnet50-bbox-imagenet-da-exp0-test
+
+
+#CUDA_VISIBLE_DEVICES=0 python3 main.py -c config/conf_dist50-resnet50-bbox-imagenet-exp0.py -a train -e 0 &>logs/dist50-resnet50-bbox-imagenet-exp0-train
+#CUDA_VISIBLE_DEVICES=0 python3 main.py -c config/conf_dist50-resnet50-bbox-imagenet-exp0.py -a test  -e 0 -k 3 &>logs/dist50-resnet50-bbox-imagenet-exp0-test
 
 
 #CUDA_VISIBLE_DEVICES=0 python3 main.py -c config/conf_dist50-resnet50-bbox-imagenet-exp1.py -a train -e 1 &>logs/dist50-resnet50-bbox-imagenet-exp1-train

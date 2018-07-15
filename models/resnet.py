@@ -48,6 +48,8 @@ class myResNet50(object):
         #x = Dropout(0.5)(x)
         #x = Dense(256, activation='relu',name='fc-2')(x)
         #x = Dropout(0.5)(x)
+        #x = Dense(128, activation='relu',name='fc-3')(x)
+        #x = Dropout(0.5)(x)
 
         x = Dense(self.num_classes, name='dense_{}'.format(self.num_classes))(x)
         predictions = Activation("softmax", name="softmax")(x)
