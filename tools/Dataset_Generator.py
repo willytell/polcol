@@ -753,23 +753,23 @@ class Dataset_Generator(keras.utils.Sequence):
 
 
             # write image
-            if True: #self.save_feed_cnn:
-                 path = "/home/willytell/Experiments/feed_cnn/exp0-kfold0"
-                 if self.batch_labels[idx] == 0: # 0 means noneo class, 1 means neo class
-                     if self.mode == 'train':      path = os.path.join(path, "feeding_images-train", "no_neoplasico")       
-                     if self.mode == 'validation': path = os.path.join(path, "feeding_images-valid", "no_neoplasico")
-                     if self.mode == 'test':       path = os.path.join(path, "feeding_images-test", "no_neoplasico")
-                 else:
-                     if self.mode == 'train':      path = os.path.join(path, "feeding_images-train", "neoplasico")
-                     if self.mode == 'validation': path = os.path.join(path, "feeding_images-valid", "neoplasico")
-                     if self.mode == 'test':       path = os.path.join(path, "feeding_images-test", "neoplasico")
+            #if True: #self.save_feed_cnn:
+            #     path = "/home/willytell/Experiments/dist5/exp2-kfold4"
+            #     if self.batch_labels[idx] == 0: # 0 means noneo class, 1 means neo class
+            #         if self.mode == 'train':      path = os.path.join(path, "feeding_images-train", "no_neoplasico")       
+            #         if self.mode == 'validation': path = os.path.join(path, "feeding_images-valid", "no_neoplasico")
+            #         if self.mode == 'test':       path = os.path.join(path, "feeding_images-test", "no_neoplasico")
+            #     else:
+            #         if self.mode == 'train':      path = os.path.join(path, "feeding_images-train", "neoplasico")
+            #         if self.mode == 'validation': path = os.path.join(path, "feeding_images-valid", "neoplasico")
+            #         if self.mode == 'test':       path = os.path.join(path, "feeding_images-test", "neoplasico")
 
-                 if not os.path.exists(path):
-                     os.makedirs(path)
+            #     if not os.path.exists(path):
+            #         os.makedirs(path)
 
-                 #print("path: {}".format(path))
+            #     #print("path: {}".format(path))
 
-                 save_img(os.path.join(path, image_name), image) 
+            #     save_img(os.path.join(path, image_name), image) 
 
 
 
