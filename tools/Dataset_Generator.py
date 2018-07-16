@@ -53,6 +53,7 @@ class Dataset_Generator(keras.utils.Sequence):
         self.mode=mode
 
         ###################
+        self.da_counter = 1
         self.rotation_range = cf.da_rotation_range
         self.height_shift_range = cf.da_height_shift_range
         self.width_shift_range = cf.da_width_shift_range
@@ -71,6 +72,7 @@ class Dataset_Generator(keras.utils.Sequence):
 
         self.crop_size = cf.crop_size_image
         self.save_to_dir = cf.da_save_to_dir
+        self.model_output_dir = cf.model_output_directory
         ###################
 
         self.imageNet = cf.load_imageNet
@@ -279,7 +281,7 @@ class Dataset_Generator(keras.utils.Sequence):
         if self.imageNet:
             # assuming tf ordering
             # 'RGB'->'BGR'
-            x = x[:, :, ::-1]
+            #x = x[:, :, ::-1]
             # Zero-center by mean pixel
             x[:, :, 0] -= 103.939
             x[:, :, 1] -= 116.779
@@ -553,7 +555,7 @@ class Dataset_Generator(keras.utils.Sequence):
 
 
         if self.crop_size is not None:
-            x = self.crop(x, None) #'center')  # <<<<<<<====================================== ATENCIÓN
+            x = self.crop(x, 'center')
         # Crop
         # TODO: tf compatible???
         #crop = list(self.crop_size) if self.crop_size else None
@@ -753,23 +755,25 @@ class Dataset_Generator(keras.utils.Sequence):
 
 
             # write image
-            #if True: #self.save_feed_cnn:
-            #     path = "/home/willytell/Experiments/dist5/exp2-kfold4"
-            #     if self.batch_labels[idx] == 0: # 0 means noneo class, 1 means neo class
-            #         if self.mode == 'train':      path = os.path.join(path, "feeding_images-train", "no_neoplasico")       
-            #         if self.mode == 'validation': path = os.path.join(path, "feeding_images-valid", "no_neoplasico")
-            #         if self.mode == 'test':       path = os.path.join(path, "feeding_images-test", "no_neoplasico")
-            #     else:
-            #         if self.mode == 'train':      path = os.path.join(path, "feeding_images-train", "neoplasico")
-            #         if self.mode == 'validation': path = os.path.join(path, "feeding_images-valid", "neoplasico")
-            #         if self.mode == 'test':       path = os.path.join(path, "feeding_images-test", "neoplasico")
+            if self.save_to_dir:
+                 #"/home/willytell/Experiments/dist50/resnet50-exp0/data_augmentation"
+                 path = os.path.join("/home/willytell/Experiments/dist50/", self.model_output_dir, 'data_augmentation')
+                 if self.batch_labels[idx] == 0: # 0 means noneo class, 1 means neo class
+                     if self.mode == 'train':      path = os.path.join(path, "feeding_images-train", "no_neoplasico")       
+                     if self.mode == 'validation': path = os.path.join(path, "feeding_images-valid", "no_neoplasico")
+                     if self.mode == 'test':       path = os.path.join(path, "feeding_images-test", "no_neoplasico")
+                 else:
+                     if self.mode == 'train':      path = os.path.join(path, "feeding_images-train", "neoplasico")
+                     if self.mode == 'validation': path = os.path.join(path, "feeding_images-valid", "neoplasico")
+                     if self.mode == 'test':       path = os.path.join(path, "feeding_images-test", "neoplasico")
 
-            #     if not os.path.exists(path):
-            #         os.makedirs(path)
+                 if not os.path.exists(path):
+                     os.makedirs(path)
 
-            #     #print("path: {}".format(path))
+                 #print("path: {}".format(path))
 
-            #     save_img(os.path.join(path, image_name), image) 
+                 save_img(os.path.join(path, str(self.da_counter) + '_'  + image_name), image)
+                 self.da_counter += 1
 
 
 
