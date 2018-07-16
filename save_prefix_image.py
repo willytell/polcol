@@ -104,11 +104,11 @@ if __name__ == '__main__':
 
     # Example:
     # Option -c: -c 1 = "% Aciertos", -c 2 = "Mean (Diff)", -c 3 = "DevStd (Diff)"
-    # python save_prefix_image.py -d "data.csv" -c 1 -t 0.8 -a "selection"
+    # python save_prefix_image.py -d "ranking.csv" -c 1 -t 0.8 -a "selection" > selection_from_ranking_0.8.txt
     elif args.action == 'selection':
         #"Image Name", "class", "% Aciertos", "Mean (Diff)", "DevStd (Diff)"
-        image_names = np.genfromtxt(args.data, delimiter=",", usecols=(0), dtype='str')
-        stats = np.genfromtxt(args.data, delimiter=",", usecols=(1,2,3,4))
+        image_names = np.genfromtxt(args.data, delimiter=",", usecols=(0,1,2), dtype='str')
+        stats = np.genfromtxt(args.data, delimiter=",", usecols=(3,4,5,6))
 
         # We have only 2 classes
         # noneo = class 0
@@ -119,7 +119,13 @@ if __name__ == '__main__':
         for idx, fname in enumerate(image_names):
             if args.column == 1:  # 1 = "% Aciertos"
                 if stats[idx, 1] >= args.threshold:
-                    print(image_names[idx])
+                    print("{};{};{};{};{};{};{}".format(image_names[idx,0],
+                                                     image_names[idx,1],
+                                                     image_names[idx,2],
+                                                     stats[idx, 0],
+                                                     stats[idx, 1],
+                                                     stats[idx, 2],
+                                                     stats[idx, 3]))
             else:
                 print("Unknown column.")
 
