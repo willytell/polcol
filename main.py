@@ -402,7 +402,7 @@ if __name__ == '__main__':
                 history = model.fit_generator(generator=train_generator, validation_data=validation_generator, 
                                               validation_steps=(validation_generator.total_images // cf.batch_size_valid),
                                               class_weight=class_weights,
-                                              max_queue_size=5, use_multiprocessing=False, workers=1,
+                                              max_queue_size=5, use_multiprocessing=True, workers=4,
                                               steps_per_epoch=((train_generator.total_images*N) // cf.batch_size_train), 
                                               epochs=cf.n_epochs, verbose=1, callbacks=cb)
 

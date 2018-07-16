@@ -9,6 +9,12 @@ import math
 import sys
 import keras
 
+#from keras.preprocessing import image
+#from keras.applications.resnet50 import preprocess_input
+from keras.preprocessing.image import img_to_array
+from keras.preprocessing.image import load_img
+from keras.applications import imagenet_utils
+
 from keras.utils import to_categorical
 from random import randint
 from scipy.misc import imread
@@ -281,7 +287,7 @@ class Dataset_Generator(keras.utils.Sequence):
         if self.imageNet:
             # assuming tf ordering
             # 'RGB'->'BGR'
-            #x = x[:, :, ::-1]
+            x = x[:, :, ::-1]
             # Zero-center by mean pixel
             x[:, :, 0] -= 103.939
             x[:, :, 1] -= 116.779
@@ -554,8 +560,9 @@ class Dataset_Generator(keras.utils.Sequence):
         #                   fill_mode=self.fill_mode, fill_constant=self.cval)
 
 
-        if self.crop_size is not None:
-            x = self.crop(x, 'center')
+        #if self.crop_size is not None:
+        #    x = self.crop(x, None) #'center') # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
         # Crop
         # TODO: tf compatible???
         #crop = list(self.crop_size) if self.crop_size else None
@@ -659,7 +666,7 @@ class Dataset_Generator(keras.utils.Sequence):
             # self.dim_ordering = 'tf'
             x = x[..., top:top + crop[0], left:left + crop[1], :]
         
-            #print ('>>>>>>>>>>>>>>X after: ' + str(x.shape))
+            # print ('>>>>>>>>>>>>>>X after: ' + str(x.shape))
             # print ('Y after: ' + str(y.shape))
         elif mode == 'center':
             center_h = (h // 2)
@@ -742,38 +749,55 @@ class Dataset_Generator(keras.utils.Sequence):
         # Create the batch_x and batch_y
         for idx, image_name in enumerate(self.batch_fnames):
     
-            image = load_img(os.path.join(self.dataset_images_path, image_name), resize=self.resize_image)
+            img = load_img(os.path.join(self.dataset_images_path, image_name), resize=self.resize_image)
+            #img = load_img(os.path.join(self.dataset_images_path, image_name), (224, 224))
+            img = img_to_array(img)
+
+            if self.mode == 'train':
+                img = self.data_augmentation(img, idx)
+                if self.crop_size is not None:
+                    img = self.crop(img, mode=None)
+            elif self.crop_size is not None:
+                    img = self.crop(img, 'center')
+
 
             #fnames_list.append(image_name)
-            image = np.asarray(image, dtype='float32')   # image = image.astype('float32')
-            image = self.standardize(image)
-            if self.mode == 'train':
-                image = self.data_augmentation(image, idx)
-            else:
-                if self.crop_size is not None:
-                    image = self.crop(image, 'center')
+            #img = np.asarray(img, dtype='float32')   # img = img.astype('float32')
+            #img = self.standardize(img)
+
+            img = np.expand_dims(img, axis=0)
+            img = imagenet_utils.preprocess_input(img)
+
+            #if self.mode == 'train':
+            #    img = self.data_augmentation(img, idx)
+            #else:
+            #    if self.crop_size is not None:
+            #        img = self.crop(img, 'center')
 
 
             # write image
-            if self.save_to_dir:
-                 #"/home/willytell/Experiments/dist50/resnet50-exp0/data_augmentation"
-                 path = os.path.join("/home/willytell/Experiments/dist50/", self.model_output_dir, 'data_augmentation')
-                 if self.batch_labels[idx] == 0: # 0 means noneo class, 1 means neo class
-                     if self.mode == 'train':      path = os.path.join(path, "feeding_images-train", "no_neoplasico")       
-                     if self.mode == 'validation': path = os.path.join(path, "feeding_images-valid", "no_neoplasico")
-                     if self.mode == 'test':       path = os.path.join(path, "feeding_images-test", "no_neoplasico")
-                 else:
-                     if self.mode == 'train':      path = os.path.join(path, "feeding_images-train", "neoplasico")
-                     if self.mode == 'validation': path = os.path.join(path, "feeding_images-valid", "neoplasico")
-                     if self.mode == 'test':       path = os.path.join(path, "feeding_images-test", "neoplasico")
+            #if True: #self.save_to_dir:
+            #     #"/home/willytell/Experiments/dist50/resnet50-exp0/data_augmentation"
+            #     #path = os.path.join("/home/willytell/Experiments/dist50/", self.model_output_dir, 'data_augmentation')
+            #     #path = "/home/willytell/Experiments/feed_cnn/with-imagenet"
+            #     path = "/home/willytell/Experiments/dist5/exp2-kfold4"
+            #     if self.batch_labels[idx] == 0: # 0 means noneo class, 1 means neo class
+            #         if self.mode == 'train':      path = os.path.join(path, "feeding_images-train", "no_neoplasico")       
+            #         if self.mode == 'validation': path = os.path.join(path, "feeding_images-valid", "no_neoplasico")
+            #         if self.mode == 'test':       path = os.path.join(path, "feeding_images-test", "no_neoplasico")
+            #     else:
+            #         if self.mode == 'train':      path = os.path.join(path, "feeding_images-train", "neoplasico")
+            #         if self.mode == 'validation': path = os.path.join(path, "feeding_images-valid", "neoplasico")
+            #         if self.mode == 'test':       path = os.path.join(path, "feeding_images-test", "neoplasico")
 
-                 if not os.path.exists(path):
-                     os.makedirs(path)
+            #     if not os.path.exists(path):
+            #         os.makedirs(path)
 
-                 #print("path: {}".format(path))
+            #     #print("path: {}".format(path))
 
-                 save_img(os.path.join(path, str(self.da_counter) + '_'  + image_name), image)
-                 self.da_counter += 1
+            #     save_img(os.path.join(path, image_name), img[0])
+            #     #save_img(os.path.join(path, str(self.da_counter) + '_'  + image_name), img)
+            #     #self.da_counter += 1
 
 
 
@@ -781,7 +805,7 @@ class Dataset_Generator(keras.utils.Sequence):
             #image = skimage.transform.resize(image, self.resize_image, order=1, preserve_range=True)
     
             # Add images to batches
-            img_batch.append(image)
+            img_batch.append(img[0])
             # Build batch of label data, reshape and add to batch
             lab_batch.append(to_categorical(self.batch_labels[idx], self.n_classes).reshape(self.n_classes))
             #print("SHAPE img_batch: {} , lab_batch: {}: ".format( np.array(img_batch).shape, np.array(lab_batch).shape )) 

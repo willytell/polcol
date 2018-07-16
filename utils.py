@@ -9,8 +9,10 @@ from sklearn.utils.multiclass import unique_labels
 
 from sklearn.model_selection import StratifiedKFold
 from scipy.misc import imread, imsave
+#import skimage.io as io
 #from imageio import imread
 import skimage.transform
+import cv2
 
 from sklearn.metrics import confusion_matrix
 import itertools
@@ -67,7 +69,9 @@ def dataset_bins_idx(X, y, n_splits):
 # Load image
 def load_img(path, resize=None, order=1, preserve_range=True):
     # Load image
-    img = imread(path)
+    #img = imread(path,mode='RGB')
+    #img = io.imread(path)
+    img = cv2.imread(path)
 
     # Resize
     # print('Desired resize: ' + str(resize))
