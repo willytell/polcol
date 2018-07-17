@@ -104,7 +104,7 @@ if __name__ == '__main__':
 
     # Example:
     # Option -c: -c 1 = "% Aciertos", -c 2 = "Mean (Diff)", -c 3 = "DevStd (Diff)"
-    # python save_prefix_image.py -d "ranking.csv" -c 1 -t 0.8 -a "selection" > selection_from_ranking_0.8.txt
+    # python save_prefix_image.py -d "ranking.csv" -c 1 -t 0.8 -a "selection" > selection_from_ranking_0.8.csv
     elif args.action == 'selection':
         #"Image Name", "class", "% Aciertos", "Mean (Diff)", "DevStd (Diff)"
         image_names = np.genfromtxt(args.data, delimiter=",", usecols=(0,1,2), dtype='str')
