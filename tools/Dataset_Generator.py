@@ -116,16 +116,27 @@ class Dataset_Generator(keras.utils.Sequence):
 
         # Only for train: compute the mean and std, and save them.
         if mode == 'train':
+            # *******************************************
+            # ENABLE ONLY TO COMPUTE MEAN AND STD
+            # *********************************************
             # Compute the mean and std using only the train set (all the images in the train set)
-            t = time.time()
-            X_all = np.concatenate((self.X_neop, self.X_noneo), axis=0)
-            self.preprocess(cf, X_all)
-            print("   Time to compute mean and std: {0:.2f} seconds.".format(time.time() - t))
-            # Save the mean and std
-            np.save(data_path + '_X_' + mode + '_mean_std', np.array([self.rgb_mean, self.rgb_std], dtype=np.float32))
-            print("   Mean and std saved to ", data_path + '_X_' + mode + '_mean_std.npy')
+            #t = time.time()
+            #X_all = np.concatenate((self.X_neop, self.X_noneo), axis=0)
+            #self.preprocess(cf, X_all)
+            #print("   Time to compute mean and std: {0:.2f} seconds.".format(time.time() - t))
+            ## Save the mean and std
+            #np.save(data_path + '_X_' + mode + '_mean_std', np.array([self.rgb_mean, self.rgb_std], dtype=np.float32))
+            #print("   Mean and std saved to ", data_path + '_X_' + mode + '_mean_std.npy')
 
-        else: # for validation or test
+            # *******************************************
+            # AND DISABLE THIS PART
+            # *******************************************
+            print("   Precomputed mean and std from " + data_path2 + '_X_' + 'train' + '_mean_std.npy')
+            tmp = np.load(data_path2 + '_X_' + 'train' + '_mean_std.npy')
+            self.rgb_mean = tmp[0]
+            self.rgb_std = tmp[1]
+
+        else: # for validation or test to load the mean and std
             if not self.imageNet:
                 print("   Reading mean and std from " + data_path2 + '_X_' + 'train' + '_mean_std.npy')
                 tmp = np.load(data_path2 + '_X_' + 'train' + '_mean_std.npy')
