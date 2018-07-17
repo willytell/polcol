@@ -8,8 +8,8 @@ echo "Configuration: with ImageNet, with data augmentation"
 
 echo "dist99"
 
-CUDA_VISIBLE_DEVICES=0 python3 main.py -c config/conf_dist99-resnet50-bbox-imagenet-da-exp0.py -a train -e 0 &>logs/dist99-resnet50-bbox-imagenet-da-exp0-train
-#CUDA_VISIBLE_DEVICES=0 python3 main.py -c config/conf_dist99-resnet50-bbox-imagenet-da-exp0.py -a test  -e 0 -k 1 &>logs/dist99-resnet50-bbox-imagenet-da-exp0-test
+#CUDA_VISIBLE_DEVICES=0 python3 main.py -c config/conf_dist99-resnet50-bbox-imagenet-da-exp0.py -a train -e 0 &>logs/dist99-resnet50-bbox-imagenet-da-exp0-train
+CUDA_VISIBLE_DEVICES=0 python3 main.py -c config/conf_dist99-resnet50-bbox-imagenet-da-exp0.py -a test  -e 0 -k 4 &>logs/dist99-resnet50-bbox-imagenet-da-exp0-test
 
 
 #CUDA_VISIBLE_DEVICES=0 python3 main.py -c config/conf_dist99-resnet50-bbox-imagenet-exp0.py -a train -e 0 &>logs/dist99-resnet50-bbox-imagenet-exp0-train
