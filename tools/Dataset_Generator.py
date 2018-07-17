@@ -126,10 +126,11 @@ class Dataset_Generator(keras.utils.Sequence):
             print("   Mean and std saved to ", data_path + '_X_' + mode + '_mean_std.npy')
 
         else: # for validation or test
-            print("   Reading mean and std from " + data_path2 + '_X_' + 'train' + '_mean_std.npy')
-            tmp = np.load(data_path2 + '_X_' + 'train' + '_mean_std.npy')
-            self.rgb_mean = tmp[0]
-            self.rgb_std = tmp[1]
+            if not self.imageNet:
+                print("   Reading mean and std from " + data_path2 + '_X_' + 'train' + '_mean_std.npy')
+                tmp = np.load(data_path2 + '_X_' + 'train' + '_mean_std.npy')
+                self.rgb_mean = tmp[0]
+                self.rgb_std = tmp[1]
 
 
         # Statistic
