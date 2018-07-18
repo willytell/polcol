@@ -176,6 +176,12 @@ class Crop():
 
             print("Processing image: {}{}".format(name[0], name[1]))
 
+            image_width = image.shape[0]
+            image_high = image.shape[1]
+
+            mask_width = mask.shape[0]
+            mask_high = mask.shape[1]
+            count = 1
             stop= False
             while not stop:
                 flag, image = self.centered_crop (image, thresh)
@@ -187,7 +193,15 @@ class Crop():
                     stop = True
 
                 else:
-                    thresh = cv2.resize(thresh, (thresh.shape[0]*2, thresh.shape[0]+2), interpolation=cv2.INTER_CUBIC)
-                    image = cv2.resize(image, (image.shape[0]*2, image.shape[0]*2), interpolation=cv2.INTER_CUBIC)
+                    image_width = image.shape[0] * count
+                    image_high = image.shape[1] * count
+
+                    mask_width = mask.shape[0] * count
+                    mask_high = mask.shape[1] * count
+
+                    thresh = cv2.resize(thresh, (mask_width, mask_high), interpolation=cv2.INTER_CUBIC)
+                    image = cv2.resize(image, (image_width, image_high), interpolation=cv2.INTER_CUBIC)
+
+                    count += 1
 
         print("All images processed.")
