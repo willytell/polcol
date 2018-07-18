@@ -2,13 +2,13 @@
 
 # process the GTHistology.csv
 
-Local='/home/willytell/Documentos/MCV/M9/TFM/ExperCNN'
+Local='/home/willytell/Documentos/MCV/M9/TFM/ExperCNN/test'
 Server='/home/master/tfm/ExperCNN'
 
 DIR=$Local
 #DIR=$Server
 
-Dataset=$DIR/'GTHistologia.csv'
+Dataset=$DIR/'GTHistologiaVIP.csv'
 
 # outputs
 Filenames=$DIR/'images_filenames.txt'

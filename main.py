@@ -368,12 +368,11 @@ if __name__ == '__main__':
                                                     apply_augmentation=cf.apply_augmentation,
                                                     sampling_score=None,
                                                     data_path=data_path,
+                                                    data_path2=data_path2,
                                                     mode='train')
-
 
                 metrics = Metrics(model, data_path, data_path2, weights_path, train_generator)
                 cb += [metrics]
-
 
                 validation_generator = Dataset_Generator(cf, cf.dataset_images_path,
                                                          n_classes=cf.num_classes,

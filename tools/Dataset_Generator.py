@@ -116,20 +116,32 @@ class Dataset_Generator(keras.utils.Sequence):
 
         # Only for train: compute the mean and std, and save them.
         if mode == 'train':
+            # *******************************************
+            # ENABLE ONLY TO COMPUTE MEAN AND STD
+            # *********************************************
             # Compute the mean and std using only the train set (all the images in the train set)
-            t = time.time()
-            X_all = np.concatenate((self.X_neop, self.X_noneo), axis=0)
-            self.preprocess(cf, X_all)
-            print("   Time to compute mean and std: {0:.2f} seconds.".format(time.time() - t))
-            # Save the mean and std
-            np.save(data_path + '_X_' + mode + '_mean_std', np.array([self.rgb_mean, self.rgb_std], dtype=np.float32))
-            print("   Mean and std saved to ", data_path + '_X_' + mode + '_mean_std.npy')
+            #t = time.time()
+            #X_all = np.concatenate((self.X_neop, self.X_noneo), axis=0)
+            #self.preprocess(cf, X_all)
+            #print("   Time to compute mean and std: {0:.2f} seconds.".format(time.time() - t))
+            ## Save the mean and std
+            #np.save(data_path + '_X_' + mode + '_mean_std', np.array([self.rgb_mean, self.rgb_std], dtype=np.float32))
+            #print("   Mean and std saved to ", data_path + '_X_' + mode + '_mean_std.npy')
 
-        else: # for validation or test
-            print("   Reading mean and std from " + data_path2 + '_X_' + 'train' + '_mean_std.npy')
+            # *******************************************
+            # AND DISABLE THIS PART
+            # *******************************************
+            print("   Precomputed mean and std from " + data_path2 + '_X_' + 'train' + '_mean_std.npy')
             tmp = np.load(data_path2 + '_X_' + 'train' + '_mean_std.npy')
             self.rgb_mean = tmp[0]
             self.rgb_std = tmp[1]
+
+        else: # for validation or test to load the mean and std
+            if not self.imageNet:
+                print("   Reading mean and std from " + data_path2 + '_X_' + 'train' + '_mean_std.npy')
+                tmp = np.load(data_path2 + '_X_' + 'train' + '_mean_std.npy')
+                self.rgb_mean = tmp[0]
+                self.rgb_std = tmp[1]
 
 
         # Statistic
@@ -753,6 +765,14 @@ class Dataset_Generator(keras.utils.Sequence):
             #img = load_img(os.path.join(self.dataset_images_path, image_name), (224, 224))
             img = img_to_array(img)
 
+
+            #fnames_list.append(image_name)
+            #img = np.asarray(img, dtype='float32')   # img = img.astype('float32')
+            img = self.standardize(img)
+
+            #img = np.expand_dims(img, axis=0)
+            #img = imagenet_utils.preprocess_input(img) # for resnet50
+
             if self.mode == 'train':
                 img = self.data_augmentation(img, idx)
                 if self.crop_size is not None:
@@ -760,13 +780,6 @@ class Dataset_Generator(keras.utils.Sequence):
             elif self.crop_size is not None:
                     img = self.crop(img, 'center')
 
-
-            #fnames_list.append(image_name)
-            #img = np.asarray(img, dtype='float32')   # img = img.astype('float32')
-            #img = self.standardize(img)
-
-            img = np.expand_dims(img, axis=0)
-            img = imagenet_utils.preprocess_input(img)
 
             #if self.mode == 'train':
             #    img = self.data_augmentation(img, idx)
@@ -780,7 +793,7 @@ class Dataset_Generator(keras.utils.Sequence):
             #     #"/home/willytell/Experiments/dist50/resnet50-exp0/data_augmentation"
             #     #path = os.path.join("/home/willytell/Experiments/dist50/", self.model_output_dir, 'data_augmentation')
             #     #path = "/home/willytell/Experiments/feed_cnn/with-imagenet"
-            #     path = "/home/willytell/Experiments/dist5/exp2-kfold4"
+            #     path = "/home/willytell/Experiments/dist99/standarize"
             #     if self.batch_labels[idx] == 0: # 0 means noneo class, 1 means neo class
             #         if self.mode == 'train':      path = os.path.join(path, "feeding_images-train", "no_neoplasico")       
             #         if self.mode == 'validation': path = os.path.join(path, "feeding_images-valid", "no_neoplasico")
@@ -795,9 +808,9 @@ class Dataset_Generator(keras.utils.Sequence):
 
             #     #print("path: {}".format(path))
 
-            #     save_img(os.path.join(path, image_name), img[0])
-            #     #save_img(os.path.join(path, str(self.da_counter) + '_'  + image_name), img)
-            #     #self.da_counter += 1
+            #     #save_img(os.path.join(path, image_name), img) #[0])
+            #     save_img(os.path.join(path, str(self.da_counter) + '_'  + image_name), img)
+            #     self.da_counter += 1
 
 
 
@@ -805,7 +818,7 @@ class Dataset_Generator(keras.utils.Sequence):
             #image = skimage.transform.resize(image, self.resize_image, order=1, preserve_range=True)
     
             # Add images to batches
-            img_batch.append(img[0])
+            img_batch.append(img) #[0])
             # Build batch of label data, reshape and add to batch
             lab_batch.append(to_categorical(self.batch_labels[idx], self.n_classes).reshape(self.n_classes))
             #print("SHAPE img_batch: {} , lab_batch: {}: ".format( np.array(img_batch).shape, np.array(lab_batch).shape )) 

@@ -40,19 +40,19 @@ batch_size_train = 8            # Batch size during training
 batch_size_valid = 3            # Batch size during validation
 batch_size_test  = 6            # Batch size during testing
 
-resize_image                 = (224, 224)       # Resize the image during training (Height, Width) or None
+resize_image                 = None #(224, 224)       # Resize the image during training (Height, Width) or None
 #resize_train                = (224, 224)      # Resize the image during training (Height, Width) or None
 #resize_valid                = (224, 224)      # Resize the image during validation
 #resize_test                 = (224, 224)      # Resize the image during testing
 
-crop_size_image              = None       # [(224, 224) | None]
+crop_size_image              = (224, 224) #None       # [(224, 224) | None]
 #crop_size_train             = None       # Crop size during training (Height, Width) or None
 #crop_size_valid             = None       # Crop size during validation
 #crop_size_test              = None       # Crop size during testing
 
 
 # Data shuffle
-shuffle_train                = True      # Whether to shuffle the training data
+shuffle_train                = False     # Whether to shuffle the training data
 shuffle_valid                = False     # Whether to shuffle the validation data
 shuffle_test                 = False     # Whether to shuffle the testing data
 seed_train                   = 1925      # Random seed for the training shuffle
@@ -68,7 +68,7 @@ seed_batch_test              = 55
 
 # Training parameters
 optimizer = 'adam'
-learning_rate = 0.00001
+learning_rate = 0.0001
 n_epochs = 200
 
 # Normalization and Standardize
@@ -113,13 +113,13 @@ checkpoint_filename          = 'weights-{epoch:002d}-{val_acc:.4f}.hdf5'  # weig
 
 # Data augmentation for training
 apply_augmentation           = True
-n_augmentation               = 21
+n_augmentation               = 15
 
-da_rotation_range            = 45         # Rnd rotation degrees 0-180
-da_width_shift_range         = 0.21       # Rnd horizontal shift
-da_height_shift_range        = 0.21       # Rnd vertical shift
-da_shear_range               = 0.03       # Shear in radians
-da_zoom_range                = [1, 1]     # Zoom
+da_rotation_range            = 5          # Rnd rotation degrees 0-180
+da_width_shift_range         = 0.0 #21       # Rnd horizontal shift
+da_height_shift_range        = 0.0 #21       # Rnd vertical shift
+da_shear_range               = 0.0 #3       # Shear in radians
+da_zoom_range                = [0.5, 0.7]     # Zoom
 da_channel_shift_range       = 0.         # Channecf.l shifts
 da_fill_mode                 = 'constant' # Fill mode ['constant' | 'nearest']
 da_cval                      = 0.         # Void image value
