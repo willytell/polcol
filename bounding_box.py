@@ -191,7 +191,7 @@ class Crop():
 
             count = 2
             stop = False
-            while not stop and count < 6:
+            while not stop and count < 5:
                 flag, roi, thr = self.centered_crop(image, thresh)
 
                 if flag:
@@ -209,37 +209,5 @@ class Crop():
             if count >= 5:
                 print("Too much zoom. Image discarded: {}{}".format(name[0], name[1]))
 
-            # image_width = image.shape[0]
-            # image_high = image.shape[1]
-            #
-            # mask_width = mask.shape[0]
-            # mask_high = mask.shape[1]
-            # count = 1
-            # stop= False
-            # while not stop and count < 100:
-            #     flag, image = self.centered_crop(image, thresh)
-            #
-            #     if flag:
-            #         print("done!")
-            #         print("Saving image: {}{}".format(name[0], name[1]))
-            #         cv2.imwrite(os.path.join(cf.bbox_output_path, name[0] + name[1]), image)
-            #         stop = True
-            #
-            #     else:
-            #         image_width = image_width * count
-            #         image_high = image_high * count
-            #         print("image size: {}x{}".format(image_width, image_high))
-            #
-            #         mask_width = mask_width * count
-            #         mask_high = mask_high * count
-            #         print("mask size: {}x{}".format(mask_width, mask_high))
-            #
-            #
-            #         #thresh = cv2.resize(thresh, (mask_width, mask_high), interpolation=cv2.INTER_CUBIC)
-            #         #thresh = cv2.resize(thresh, (2000, 2000)) #, interpolation=cv2.INTER_CUBIC)
-            #         #image  = cv2.resize(image, (image_width, image_high), interpolation=cv2.INTER_CUBIC)
-            #         #image  = cv2.resize(image, (2000, 2000)) #, interpolation=cv2.INTER_CUBIC)
-            #
-            #         count += 1
 
         print("All images processed.")
