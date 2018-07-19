@@ -19,8 +19,8 @@ dataset_prefix = "dataset"
 dataset_directory = "/home/willytell/Documentos/MCV/M9/TFM/ExperCNN"
 images_filenames = "images_filenames_from_ranking_0.8.txt"
 labels = "binary_classification_from_ranking_0.8.txt"
-#dataset_images_path = "/home/willytell/Documentos/MCV/M9/TFM/ExperCNN/Original"   # all images are in this folder
-dataset_images_path = "/home/willytell/Documentos/MCV/M9/TFM/ExperCNN/BBox"   # all images are in this folder
+dataset_images_path = "/home/willytell/Documentos/MCV/M9/TFM/ExperCNN/Original"   # all images are in this folder
+#dataset_images_path = "/home/willytell/Documentos/MCV/M9/TFM/ExperCNN/BBox"   # all images are in this folder
 
 # Generate images using bounding boxes of masks.
 dataset_mask_directory = "/home/willytell/Documentos/MCV/M9/TFM/ExperCNN/GT"

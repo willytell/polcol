@@ -98,6 +98,7 @@ class Crop():
     def centered_crop(self, image, thresh):
 
         output = cv2.connectedComponentsWithStats(thresh, self.connectivity, cv2.CV_32S)
+        nlabels, labels, stats, centroids = cv2.connectedComponentsWithStats(binimage)
 
         # print("output[2] = ", output[2])
         # print("\n")
@@ -174,7 +175,8 @@ class Crop():
             mask = cv2.imread(os.path.join(cf.dataset_mask_directory, name[0] + self.suffix), cv2.IMREAD_GRAYSCALE)
             ret, thresh = cv2.threshold(mask, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
 
-            print("Processing image: {}{}".format(name[0], name[1]))
+            print("Processing image: {}".format(os.path.join(cf.dataset_images_path, name[0] + name[1])))
+            #print("".format())
 
             image_width = image.shape[0]
             image_high = image.shape[1]
@@ -183,8 +185,8 @@ class Crop():
             mask_high = mask.shape[1]
             count = 1
             stop= False
-            while not stop:
-                flag, image = self.centered_crop (image, thresh)
+            while not stop and count < 100:
+                flag, image = self.centered_crop(image, thresh)
 
                 if flag:
                     print("done!")
@@ -195,12 +197,17 @@ class Crop():
                 else:
                     image_width = image_width * count
                     image_high = image_high * count
+                    print("image size: {}x{}".format(image_width, image_high))
 
                     mask_width = mask_width * count
                     mask_high = mask_high * count
+                    print("mask size: {}x{}".format(mask_width, mask_high))
 
-                    thresh = cv2.resize(thresh, (mask_width, mask_high), interpolation=cv2.INTER_CUBIC)
-                    image = cv2.resize(image, (image_width, image_high), interpolation=cv2.INTER_CUBIC)
+
+                    #thresh = cv2.resize(thresh, (mask_width, mask_high), interpolation=cv2.INTER_CUBIC)
+                    #thresh = cv2.resize(thresh, (2000, 2000)) #, interpolation=cv2.INTER_CUBIC)
+                    #image  = cv2.resize(image, (image_width, image_high), interpolation=cv2.INTER_CUBIC)
+                    #image  = cv2.resize(image, (2000, 2000)) #, interpolation=cv2.INTER_CUBIC)
 
                     count += 1
 
