@@ -1,6 +1,7 @@
 import numpy as np
 import os
 import cv2
+import sys
 
 from utils import read_data
 
@@ -97,8 +98,9 @@ class Crop():
 
     def centered_crop(self, image, thresh):
 
-        output = cv2.connectedComponentsWithStats(thresh, self.connectivity, cv2.CV_32S)
-        nlabels, labels, stats, centroids = cv2.connectedComponentsWithStats(binimage)
+        #output = cv2.connectedComponentsWithStats(thresh, self.connectivity, cv2.CV_32S)
+        #nlabels, labels, stats, centroids = cv2.connectedComponentsWithStats(binimage)
+        nlabels, labels, stats, centroids = cv2.connectedComponentsWithStats(thresh, self.connectivity, cv2.CV_32S)
 
         # print("output[2] = ", output[2])
         # print("\n")
@@ -108,10 +110,9 @@ class Crop():
         idx_global = 1
 
         # but, if there are more than 2, we have to find who has the major amount.
-        if output[2].shape[0] > 2:
-
-            for idx_tmp in range(1, output[2].shape[0]):
-                if output[2][idx_tmp, 4] > output[2][idx_global, 4]:
+        if stats.shape[0] > 2:
+            for idx_tmp in range(1, stats.shape[0]):
+                if stats[idx_tmp, 4] > stats[idx_global, 4]:
                     idx_global = idx_tmp
 
         # output[2]
@@ -120,40 +121,47 @@ class Crop():
         # 1 [313    121    660   930  257558]
         # 2 [357    870     1     1        1]
 
-        x = output[2][idx_global, 0]
-        y = output[2][idx_global, 1]
-        w = output[2][idx_global, 2]
-        h = output[2][idx_global, 3]
+        # bounding box
+        x = stats[idx_global, 0]
+        y = stats[idx_global, 1]
+        w = stats[idx_global, 2]
+        h = stats[idx_global, 3]
 
-        # BBox
-        roi = image[y:y + h, x:x + w]
+        # centroid
+        x_center = centroids[idx_global, 0]
+        y_center = centroids[idx_global, 1]
+        #print("centroid({}, {})".format(int(x_center), int(y_center)))
 
-        y_center = y + (h // 2)
-        x_center = x + (w // 2)
 
-        y1 = y_center - (self.high // 2)
-        x1 = x_center - (self.width // 2)
+        # top left corner of the crop
+        x1 = int(x_center) - (self.width // 2)
+        y1 = int(y_center) - (self.high  // 2)
 
-        # check if the crop is inside of the bounding box
-        if y1 >= 0 and x1 >= 0 and (y1 + self.high) <= h and (x1 + self.width) <= w:
-            print("The centered crop is inside the bbox.")
-            crop = thresh[y1:y1 + self.high, x1:x1 + self.width]
+        if 0 <= x1 and 0 <= y1 and (x1 + self.width) <= stats[0, 2] and (y1 + self.high) <= stats[0, 4]:
+            #print(">> crop inside the image!!!")
+
+            crop_thesh = thresh[y1:y1 + self.high, x1:x1 + self.width]
+            crop_image = image [y1:y1 + self.high, x1:x1 + self.width]
 
             # erosion with SE = (width, high)
-            # kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (self.width, self.high))
-            kernel = np.ones((self.width, self.high), np.uint8)
-            erosion = cv2.erode(crop, kernel, iterations=1)
+            kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (self.width, self.high))
+            #kernel = np.ones((self.width, self.high), np.uint8)
+            erosion = cv2.erode(crop_thesh, kernel, iterations=1)
 
-            output2 = cv2.connectedComponentsWithStats(erosion, self.connectivity, cv2.CV_32S)
+            nlabels2, labels2, stats2, centroids2 = cv2.connectedComponentsWithStats(erosion, self.connectivity, cv2.CV_32S)
+            #print(stats.shape)
+            #sys.stdout.flush()
+            #print(stats2)
+            #sys.stdout.flush()
 
-            if output2[2].shape[0] > 2:
-                amount = output2[2][1, 4]
-                if amount == 1:
-                    print("Voala!")
-                    return True, image[y1:y1 + self.high, x1:x1 + self.width]
+            if stats2.shape[0] == 2 and stats2[1, 0] == 0 and stats2[1, 1] == 0 and stats2[1, 2] == self.width and \
+                stats2[1, 3] == self.high and stats2[1, 4] == (self.width * self.high):
+                #return True, crop_thesh[0:self.high, 0:self.width]*8
+                return True, crop_image[0:self.high, 0:self.width] , crop_thesh[0:self.high, 0:self.width]
 
+            #return True, image[y1:y1+self.high, x1:x1+self.width]
 
-        return False, None
+        return False, image[y:y + h, x:x + w], thresh[y:y + h, x:x + w]
 
 
     def make(self, cf):
@@ -176,39 +184,62 @@ class Crop():
             ret, thresh = cv2.threshold(mask, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
 
             print("Processing image: {}".format(os.path.join(cf.dataset_images_path, name[0] + name[1])))
-            #print("".format())
 
-            image_width = image.shape[0]
-            image_high = image.shape[1]
 
-            mask_width = mask.shape[0]
-            mask_high = mask.shape[1]
-            count = 1
-            stop= False
-            while not stop and count < 100:
-                flag, image = self.centered_crop(image, thresh)
+            image_copy = image.copy()
+            thresh_copy = thresh.copy()
+
+            count = 2
+            stop = False
+            while not stop and count < 6:
+                flag, roi, thr = self.centered_crop(image, thresh)
 
                 if flag:
-                    print("done!")
-                    print("Saving image: {}{}".format(name[0], name[1]))
-                    cv2.imwrite(os.path.join(cf.bbox_output_path, name[0] + name[1]), image)
+                    print("Saving image: {}".format(name[0]))
+                    cv2.imwrite(os.path.join(cf.bbox_output_path, name[0] + name[1]), roi)
+                    #cv2.imwrite(os.path.join(cf.bbox_output_path, name[0] + '_BIN_'+ name[1]), thr*8)
                     stop = True
 
                 else:
-                    image_width = image_width * count
-                    image_high = image_high * count
-                    print("image size: {}x{}".format(image_width, image_high))
-
-                    mask_width = mask_width * count
-                    mask_high = mask_high * count
-                    print("mask size: {}x{}".format(mask_width, mask_high))
-
-
-                    #thresh = cv2.resize(thresh, (mask_width, mask_high), interpolation=cv2.INTER_CUBIC)
-                    #thresh = cv2.resize(thresh, (2000, 2000)) #, interpolation=cv2.INTER_CUBIC)
-                    #image  = cv2.resize(image, (image_width, image_high), interpolation=cv2.INTER_CUBIC)
-                    #image  = cv2.resize(image, (2000, 2000)) #, interpolation=cv2.INTER_CUBIC)
-
+                    #print("skipped crop.")
+                    thresh = cv2.resize(thr, (thr.shape[1] * count, thr.shape[0] * count), interpolation=cv2.INTER_CUBIC)
+                    image = cv2.resize(roi, (roi.shape[1] * count, roi.shape[0] * count), interpolation=cv2.INTER_CUBIC)
                     count += 1
+
+            if count >= 5:
+                print("Too much zoom. Image discarded: {}{}".format(name[0], name[1]))
+
+            # image_width = image.shape[0]
+            # image_high = image.shape[1]
+            #
+            # mask_width = mask.shape[0]
+            # mask_high = mask.shape[1]
+            # count = 1
+            # stop= False
+            # while not stop and count < 100:
+            #     flag, image = self.centered_crop(image, thresh)
+            #
+            #     if flag:
+            #         print("done!")
+            #         print("Saving image: {}{}".format(name[0], name[1]))
+            #         cv2.imwrite(os.path.join(cf.bbox_output_path, name[0] + name[1]), image)
+            #         stop = True
+            #
+            #     else:
+            #         image_width = image_width * count
+            #         image_high = image_high * count
+            #         print("image size: {}x{}".format(image_width, image_high))
+            #
+            #         mask_width = mask_width * count
+            #         mask_high = mask_high * count
+            #         print("mask size: {}x{}".format(mask_width, mask_high))
+            #
+            #
+            #         #thresh = cv2.resize(thresh, (mask_width, mask_high), interpolation=cv2.INTER_CUBIC)
+            #         #thresh = cv2.resize(thresh, (2000, 2000)) #, interpolation=cv2.INTER_CUBIC)
+            #         #image  = cv2.resize(image, (image_width, image_high), interpolation=cv2.INTER_CUBIC)
+            #         #image  = cv2.resize(image, (2000, 2000)) #, interpolation=cv2.INTER_CUBIC)
+            #
+            #         count += 1
 
         print("All images processed.")
