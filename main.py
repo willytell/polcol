@@ -19,7 +19,7 @@ from tools.callbacks_factory import Callbacks_Factory
 from keras import backend as K
 from utils import plot_confusion_matrix, print_stats
 from sklearn.metrics import confusion_matrix
-from bounding_box import BBox
+from bounding_box import BBox, Crop
 
 from keras.callbacks import Callback
 from sklearn.metrics import recall_score, precision_score, fbeta_score, f1_score, cohen_kappa_score, average_precision_score, precision_recall_fscore_support, accuracy_score, matthews_corrcoef, roc_auc_score
@@ -238,7 +238,7 @@ if __name__ == '__main__':
     parser.add_argument('-c', '--config_path', type=str, default=None, help='Configuration file')
     parser.add_argument('-e', '--experiment_num', type=int, default=None, help='Configuration file')
     parser.add_argument('-k', '--kfold', type=int, default=None, help='Configuration file')
-    parser.add_argument('-a', '--action', type=str, default=None, help='bbox, divide, train or test')
+    parser.add_argument('-a', '--action', type=str, default=None, help='bbox, centered_crop, divide, train or test')
     args = parser.parse_args()
 
     cf = Configuration(args.config_path, args.action).load()
@@ -255,6 +255,12 @@ if __name__ == '__main__':
         bbox = BBox()
         bbox.load(cf)
         bbox.make(cf)
+
+    if args.action == 'centered_crop':
+        print("centered crop...")
+        cropping = Crop(width=224, high=224)
+        cropping.load(cf)
+        cropping.make(cf)
 
     # Divide the Dataset for Cross-Validation
     if args.action == 'divide':
