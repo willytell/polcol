@@ -14,6 +14,7 @@ import keras
 from keras.preprocessing.image import img_to_array
 from keras.preprocessing.image import load_img
 from keras.applications import imagenet_utils
+from keras.applications.inception_v3 import preprocess_input
 
 from keras.utils import to_categorical
 from random import randint
@@ -56,7 +57,9 @@ class Dataset_Generator(keras.utils.Sequence):
         self.rescale = cf.norm_rescale
         self.featurewise_center = cf.norm_featurewise_center
         self.featurewise_std_normalization = cf.norm_featurewise_std_normalization
-        self.mode=mode
+        self.mode = mode
+        self.rgb_mean = None
+        self.rgb_std = None
 
         ###################
         self.da_counter = 1
@@ -80,6 +83,8 @@ class Dataset_Generator(keras.utils.Sequence):
         self.save_to_dir = cf.da_save_to_dir
         self.model_output_dir = cf.model_output_directory
         ###################
+
+        self.model_name = cf.model_name
 
         self.imageNet = cf.load_imageNet
 
@@ -131,10 +136,11 @@ class Dataset_Generator(keras.utils.Sequence):
             # *******************************************
             # AND DISABLE THIS PART
             # *******************************************
-            print("   Precomputed mean and std from " + data_path2 + '_X_' + 'train' + '_mean_std.npy')
-            tmp = np.load(data_path2 + '_X_' + 'train' + '_mean_std.npy')
-            self.rgb_mean = tmp[0]
-            self.rgb_std = tmp[1]
+            if not self.imageNet:
+                print("   Precomputed mean and std from " + data_path2 + '_X_' + 'train' + '_mean_std.npy')
+                tmp = np.load(data_path2 + '_X_' + 'train' + '_mean_std.npy')
+                self.rgb_mean = tmp[0]
+                self.rgb_std = tmp[1]
 
         else: # for validation or test to load the mean and std
             if not self.imageNet:
@@ -297,14 +303,26 @@ class Dataset_Generator(keras.utils.Sequence):
 
     def standardize(self, x):
         if self.imageNet:
+            x = np.expand_dims(x, axis=0)
+            # for VGG16, VGG19, ResNet50
+            if self.model_name == 'vgg16' or self.model_name == 'vgg19' or self.model_name == 'resnet50':
+                x = imagenet_utils.preprocess_input(x)
+            elif self.model_name == 'inceptionV3' or self.model_name == 'xception':
+                x = preprocess_input(x)
+            else:
+                print("Error: unknown model_name in configuration file.")
+                exit()
+
+            return x[0]
             # assuming tf ordering
             # 'RGB'->'BGR'
-            x = x[:, :, ::-1]
+            #x = x[:, :, ::-1]
             # Zero-center by mean pixel
-            x[:, :, 0] -= 103.939
-            x[:, :, 1] -= 116.779
-            x[:, :, 2] -= 123.68
-            return x
+            #x[:, :, 0] -= 103.939
+            #x[:, :, 1] -= 116.779
+            #x[:, :, 2] -= 123.68
+            #print("CUAKKKKKKKKKK")
+            #return x
 
 
         # Normalize
