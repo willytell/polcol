@@ -1,7 +1,7 @@
 # Con este fichero lanzamos un trabajo que nos permite ver que valor contendrá en el entorno
 # CUDA_VISIBLE_DEVICES al solicitar la cantidad de gráficas que queramos.
 
-for e in `seq 0 9`; do
+for e in 0 1; do #`seq 5 9`; do
    for k in `seq 0 8`; do
       sbatch ./run-cluster.sh $e $k
    done
