@@ -5,7 +5,7 @@
 #SBATCH -t 5-00:05 # Runtime in D-HH:MM
 #SBATCH -p dcc # Partition to submit to
 #SBATCH --mem 16384 # 16GB solicitados.
-#SBATCH --gres gpu:Ti1080:1 # Para pedir Pascales MAX 8
+#SBATCH --gres gpu:Pascal:1 # Para pedir Pascales MAX 8
 #SBATCH -o %x_%u_%j.out # File to which STDOUT will be written
 #SBATCH -e %x_%u_%j.err # File to which STDERR will be written
 
@@ -14,7 +14,7 @@ kfold=$2
 
 echo "begining..."
 
-echo "Experiment: Results6-partE"
+echo "Experiment: Results6-partE1"
 echo "Dataset: images from BBox"
 echo "Configuration: without ImageNet and without data augmentation"
 
