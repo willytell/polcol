@@ -148,14 +148,34 @@ if __name__ == '__main__':
 
         config_path = args.configuration #"/home/willytell/polcol/config/conf_dist50-resnet50-bbox-exp0.py"
 
+        print("\nReading configuration file from {}".format(config_path))
         cf = SourceFileLoader('config', config_path).load_module()
 
         # read the dataset
+        print("\nReading all available images from {}/{}".format(args.input_dir, args.images))
+        print("\nReading all available labes from {}/{}".format(args.input_dir, args.labels))
         X, y = read_data(args.input_dir, args.images, args.labels)
+
+        print("\nAll available images are:")
+        print(X)
+        print("\nAll available corresponding labels are:")
+        print(y)
+
 
         if cf.num_classes == 2:
             X_test_noneo, y_test_noneo = filter_by_class(X, y, 'NONEOPLASICO')
             X_test_neop, y_test_neop = filter_by_class(X, y, 'NEOPLASICO')
+
+        print("\n   > Filtering by class ...")
+        print("\nInitiall X_test_noneo and y_test_noneo:")
+        print(X_test_noneo)
+        print(y_test_noneo)
+        print("\nInitial X_test_neop and y_test_neop")
+        print(X_test_neop)
+        print(y_test_neop)
+
+        print("==================================================")
+
 
 
         cf.output_path = os.path.join(cf.experiments_path, cf.experiment_name, args.output_dir)
@@ -172,14 +192,14 @@ if __name__ == '__main__':
         e = args.experiment
         k = args.kfold
         data_path = os.path.join(cf.experiments_path, cf.experiment_name) + '/' + cf.experiment_prefix + str(
-            e) + '_' + cf.dataset_prefix + '_' + str(cf.num_images_for_test) + '_' + str(
+            e) + '_' + cf.dataset_prefix + str(k) + '_' + str(cf.num_images_for_test) + '_' + str(
             cf.n_splits) + '_' + cf.n_splits_prefix + str(k)
 
 
         modes = ["train", "validation"]
 
         for mode in modes:
-            print("mode: {}".format(mode))
+            print("\n   > Mode: {}".format(mode))
             # Load Neop: X_train/validation/test_neop.npy, y_train/validation/test_neop.npy
             X_neop = np.load(data_path + '_X_' + mode + '_neop.npy')
             y_neop = np.load(data_path + '_y_' + mode + '_neop.npy')
@@ -214,41 +234,28 @@ if __name__ == '__main__':
         cad = cf.experiment_prefix + str(e) + '_' + cf.dataset_prefix + '_' + str(cf.num_images_for_test) + '_' + str(
             cf.n_splits)
 
-        print("cad: {}".format(cad))
+        #print("cad: {}".format(cad))
 
         # Saving the X_test and y_test for Neop and Noneo
-        # np.save(os.path.join(cf.output_path, cad + '_X_test_neop'), X_test_neop)
-        # np.save(os.path.join(cf.output_path, cad + '_y_test_neop'), y_test_neop)
+        np.save(os.path.join(cf.output_path, cad + '_X_test_neop'), X_test_neop)
+        np.save(os.path.join(cf.output_path, cad + '_y_test_neop'), y_test_neop)
 
-        # np.save(os.path.join(cf.output_path, cad + '_X_test_noneo'), X_test_noneo)
-        # np.save(os.path.join(cf.output_path, cad + '_y_test_noneo'), y_test_noneo)
+        np.save(os.path.join(cf.output_path, cad + '_X_test_noneo'), X_test_noneo)
+        np.save(os.path.join(cf.output_path, cad + '_y_test_noneo'), y_test_noneo)
 
-        print("\nWriting X_test_neop:")
+        print("==================================================")
+        print("\n   > Finall test set ...")
+        print("\nWriting X_test_neop to {}/{}_X_test_neop:".format(cf.output_path, cad))
         print(X_test_neop)
+        print("\nWriting y_test_neop to {}/{}_y_test_neop:".format(cf.output_path,cad))
         print(y_test_neop)
 
-        print("\nWriting X_test_noneo:")
+        print("\nWriting X_test_noneo to {}/{}_X_test_noneo:".format(cf.output_path,cad))
         print(X_test_noneo)
+        print("\nWriting y_test_noneo to {}/{}_y_test_noneo:".format(cf.output_path,cad))
         print(y_test_noneo)
 
     
     else:
         print("Unknown action.")
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
