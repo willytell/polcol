@@ -4,12 +4,15 @@ import os
 import sys
 import shutil
 
+from utils import read_data, filter_by_class
+from importlib.machinery import SourceFileLoader
 
-def filter_by_class(X, y, filter):
-    idx = np.where(y == filter)  # filter: 0 = 'NONEOPLASICO' and 1 = 'NEOPLASICO'
-    idx_arr = np.asarray(idx[0])  # tupla to np.array
 
-    return np.copy(X[idx_arr]), np.copy(y[idx_arr])
+# def filter_by_class(X, y, filter):
+#     idx = np.where(y == filter)  # filter: 0 = 'NONEOPLASICO' and 1 = 'NEOPLASICO'
+#     idx_arr = np.asarray(idx[0])  # tupla to np.array
+#
+#     return np.copy(X[idx_arr]), np.copy(y[idx_arr])
 
 
 if __name__ == '__main__':
@@ -19,7 +22,10 @@ if __name__ == '__main__':
     parser.add_argument('-o', '--output_dir', type=str, default=None, help='directory to save images')
     parser.add_argument('-c', '--column', type=int, default=None, help='column to set the prefix')
     parser.add_argument('-t', '--threshold', type=float, default=None, help='threshols')
-    parser.add_argument('-a', '--action', type=str, default=None, help='feed_cnn, prefix, select')
+    parser.add_argument('-im', '--images', type=str, default=None, help='full path to images list')
+    parser.add_argument('-l', '--labels', type=str, default=None, help='full path to labels list')
+    parser.add_argument('-config', '--configuration', type=str, default=None, help='full path to labels list')
+    parser.add_argument('-a', '--action', type=str, default=None, help='feed_cnn, prefix, select, test')
     args = parser.parse_args()
 
     # Example:
@@ -128,6 +134,105 @@ if __name__ == '__main__':
                                                      stats[idx, 3]))
             else:
                 print("Unknown column.")
+
+
+
+    # Example:
+    # python save_prefix_image.py -i "/home/willytell/polcol" -im "images_filenames_from_ranking_0.8.txt" -l "binary_classification_from_ranking_0.8.txt"
+    #                             -config "/home/willytell/polcol/config/conf_dist50-resnet50-bbox-exp0.py" -o "test-0.8"
+
+    elif args.action == 'test':
+        # make a "test set" including all the images in the data set, less the images that are in the train and validation set.
+
+        config_path = args.configuration #"/home/willytell/polcol/config/conf_dist50-resnet50-bbox-exp0.py"
+
+        cf = SourceFileLoader('config', config_path).load_module()
+
+        # read the dataset
+        X, y = read_data(args.input_dir, args.images, args.labels)
+
+        if cf.num_classes == 2:
+            X_test_noneo, y_test_noneo = filter_by_class(X, y, 'NONEOPLASICO')
+            X_test_neop, y_test_neop = filter_by_class(X, y, 'NEOPLASICO')
+
+
+        output_path = os.path.join(cf.experiments_path, cf.experiment_name, args.output_dir)
+
+        if not os.path.exists(output_path):
+            os.makedirs(output_path)
+
+
+        for e in range(cf.num_repetition_experiment):
+
+            #experiment9_dataset_21_9_X_test_neop.npy
+            #experiment9_dataset_21_9_y_test_neop.npy
+
+            #experiment9_dataset_21_9_X_test_noneo.npy
+            #experiment9_dataset_21_9_y_test_noneo.npy
+
+            data_path = os.path.join(cf.experiments_path, cf.experiment_name) + '/' + cf.experiment_prefix + str(
+                e) + '_' + cf.dataset_prefix + '_' + str(cf.num_images_for_test) + '_' + str(cf.n_splits)
+
+            modes = ["train", "validation"]
+
+            for mode in modes:
+                print("mode: {}".format(mode))
+                # Load Neop: X_train/validation/test_neop.npy, y_train/validation/test_neop.npy
+                X_neop = np.load(data_path + '_X_' + mode + '_neop.npy')
+                y_neop = np.load(data_path + '_y_' + mode + '_neop.npy')
+                print("\nReading X_neop:")
+                print(X_neop)
+                print(y_neop)
+
+                # Load NOneo: X_train/validation/test_noneo.npy, y_train/validation/test_noneo.npy
+                X_noneo = np.load(data_path + '_X_' + mode + '_noneo.npy')
+                y_noneo = np.load(data_path + '_y_' + mode + '_noneo.npy')
+                print("\nReading X_noneo:")
+                print(X_neop)
+                print(y_neop)
+
+                # Neop class
+                for item in X_neop:
+                    idx = np.where(X_test_neop == item)
+                    if np.asarray(idx).size == 0:
+                        print("X_neop: idx is zero.")
+                    X_test_neop = np.delete(X_test_neop, idx, axis=0)
+                    y_test_neop = np.delete(y_test_neop, idx, axis=0)
+
+                # No-neo class
+                for item in X_noneo:
+                    idx = np.where(X_test_noneo == item)
+                    if np.asarray(idx).size == 0:
+                        print("X_noneo: idx is zero.")
+                    X_test_noneo = np.delete(X_test_noneo, idx, axis=0)
+                    y_test_noneo = np.delete(y_test_noneo, idx, axis=0)
+
+
+            cad = cf.experiment_prefix + str(e) + '_' + cf.dataset_prefix + '_' + str(cf.num_images_for_test) + '_' + str(cf.n_splits)
+
+            # Saving the X_test and y_test for Neop and Noneo
+            np.save(os.path.join(cf.output_path, cad + '_X_test_neop'), X_test_neop)
+            np.save(os.path.join(cf.output_path, cad + '_y_test_neop'), y_test_neop)
+
+            np.save(os.path.join(cf.output_path, cad + '_X_test_noneo'), X_test_noneo)
+            np.save(os.path.join(cf.output_path, cad + '_y_test_noneo'), y_test_noneo)
+
+            print("\nWriting X_test_neop:")
+            print(X_test_neop)
+            print(y_test_neop)
+
+            print("\nWriting X_test_noneo:")
+            print(X_test_noneo)
+            print(y_test_noneo)
+
+
+
+
+
+
+
+
+
 
 
 
