@@ -156,10 +156,10 @@ if __name__ == '__main__':
             X_test_neop, y_test_neop = filter_by_class(X, y, 'NEOPLASICO')
 
 
-        output_path = os.path.join(cf.experiments_path, cf.experiment_name, args.output_dir)
+        cf.output_path = os.path.join(cf.experiments_path, cf.experiment_name, args.output_dir)
 
-        if not os.path.exists(output_path):
-            os.makedirs(output_path)
+        if not os.path.exists(cf.output_path):
+            os.makedirs(cf.output_path)
 
 
         for e in range(cf.num_repetition_experiment):
@@ -211,11 +211,11 @@ if __name__ == '__main__':
             cad = cf.experiment_prefix + str(e) + '_' + cf.dataset_prefix + '_' + str(cf.num_images_for_test) + '_' + str(cf.n_splits)
 
             # Saving the X_test and y_test for Neop and Noneo
-            np.save(os.path.join(cf.output_path, cad + '_X_test_neop'), X_test_neop)
-            np.save(os.path.join(cf.output_path, cad + '_y_test_neop'), y_test_neop)
+            #np.save(os.path.join(cf.output_path, cad + '_X_test_neop'), X_test_neop)
+            #np.save(os.path.join(cf.output_path, cad + '_y_test_neop'), y_test_neop)
 
-            np.save(os.path.join(cf.output_path, cad + '_X_test_noneo'), X_test_noneo)
-            np.save(os.path.join(cf.output_path, cad + '_y_test_noneo'), y_test_noneo)
+            #np.save(os.path.join(cf.output_path, cad + '_X_test_noneo'), X_test_noneo)
+            #np.save(os.path.join(cf.output_path, cad + '_y_test_noneo'), y_test_noneo)
 
             print("\nWriting X_test_neop:")
             print(X_test_neop)
@@ -224,6 +224,15 @@ if __name__ == '__main__':
             print("\nWriting X_test_noneo:")
             print(X_test_noneo)
             print(y_test_noneo)
+
+    
+    else:
+        print("Unknown action.")
+
+
+
+
+
 
 
 
